@@ -1,0 +1,19 @@
+{
+    "name": "ToolKits.Editor",
+    "rootNamespace": "ToolKits.Editor",
+    "references": [
+        "GUID:04fb671645d439a4eba7532853ef90f8",
+        "GUID:478a2357cc57436488a56e564b08d223"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": true,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

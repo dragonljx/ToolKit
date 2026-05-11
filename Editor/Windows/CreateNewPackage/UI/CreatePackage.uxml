@@ -1,0 +1,24 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" xsi="http://www.w3.org/2001/XMLSchema-instance" engine="UnityEngine.UIElements" editor="UnityEditor.UIElements" noNamespaceSchemaLocation="../../../../../../UIElementsSchema/UIElements.xsd" editor-extension-mode="True">
+    <Style src="project://database/Packages/dragon.toolkits/Editor/Windows/CreateNewPackage/UI/CreatePackage.uss?fileID=7433441132597879392&amp;guid=e57a845c6f6679d4bbe19c156fe214c1&amp;type=3#CreatePackage" />
+    <ui:VisualElement style="flex-grow: 1;">
+        <ui:GroupBox>
+            <ui:TextField picking-mode="Ignore" label="插件包名称：" name="PackageNameText" binding-path="PackageNameText" keyboard-type="Default" class="input-text" style="justify-content: flex-end; align-items: stretch; align-self: stretch;" />
+            <ui:VisualElement>
+                <ui:VisualElement style="flex-grow: 1; flex-direction: row; flex-wrap: nowrap; justify-content: flex-start; align-self: auto; align-items: auto;">
+                    <ui:TextField picking-mode="Ignore" label="插件包地址：" name="PackagePathText" binding-path="PackagePathText" class="input-text" style="flex-direction: row; flex-wrap: wrap; align-self: auto; justify-content: space-around; align-items: stretch; width: 90%; flex-basis: auto;" />
+                    <ui:Button text="..." display-tooltip-when-elided="true" name="OpenFileButton" style="align-items: auto; align-self: auto; justify-content: flex-start; flex-direction: column; flex-wrap: nowrap; width: auto; visibility: visible; display: flex; overflow: hidden; -unity-text-align: middle-left;" />
+                </ui:VisualElement>
+                <ui:VisualElement style="flex-direction: row; justify-content: flex-end; align-items: stretch;">
+                    <ui:Button text="本地包路径" display-tooltip-when-elided="true" name="LocalPathButton" />
+                    <ui:Button text="外部包路径" display-tooltip-when-elided="true" name="ExternalPathButton" />
+                </ui:VisualElement>
+            </ui:VisualElement>
+            <ui:TextField picking-mode="Ignore" label="公司名：" name="CompanyNameText" binding-path="CompanyNameText" class="input-text" style="justify-content: flex-end; align-items: stretch; align-self: stretch;" />
+            <ui:TextField picking-mode="Ignore" label="Email：" name="EmailText" binding-path="EmailText" class="input-text" style="justify-content: flex-end; align-items: stretch; align-self: stretch; display: flex;" />
+            <ui:TextField picking-mode="Ignore" label="Url：" name="UrlText" binding-path="UrlText" class="input-text" style="justify-content: flex-end; align-items: stretch; align-self: stretch;" />
+            <ui:TextField picking-mode="Ignore" label="描述：" name="DescriptionText" multiline="true" binding-path="DescriptionText" class="input-text" style="justify-content: flex-end; align-items: stretch; align-self: stretch;" />
+        </ui:GroupBox>
+        <ui:Button text="创建插件" display-tooltip-when-elided="true" name="CreateButton" focusable="true" />
+        <ui:Button text="Test" display-tooltip-when-elided="true" name="TestButton" />
+    </ui:VisualElement>
+</ui:UXML>

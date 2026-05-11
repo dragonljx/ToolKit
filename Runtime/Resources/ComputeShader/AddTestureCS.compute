@@ -1,0 +1,24 @@
+// Each #kernel tells which function to compile; you can have many kernels
+#pragma kernel CSMain
+
+// Create a RenderTexture with enableRandomWrite flag and set it
+// with cs.SetTexture
+ 
+Texture2D  FrontBuffer; 
+Texture2D  BackBuffer;
+
+RWTexture2D<float4> Result;
+// [0] width [1] height [2] offsetX [3] offsetY
+
+uint heightB; 
+uint heightF;
+uint offsetX; 
+uint offsetY;
+
+[numthreads(8,8,1)]
+void CSMain (uint3 id : SV_DispatchThreadID)
+{
+    float stepvalue = step(BackBuffer[id.xy].a, 0.0f);
+    int2 temp = int2(id.x- offsetX, id.y + (offsetY - heightB) + heightF);
+    Result[id.xy] = lerp(BackBuffer[id.xy], FrontBuffer[temp.xy], stepvalue);
+}

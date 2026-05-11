@@ -1,0 +1,17 @@
+{
+    "name": "com.dragon.toolkits",
+    "version": "1.0.0",
+    "displayName": "Tool Kits",
+    "description": "\u5e38\u7528\u57fa\u672c\u5de5\u5177",
+    "keywords": [
+        "toolkit",
+        "utility",
+        "extensions",
+        "framework"
+    ],
+    "author": {
+        "name": "Dragon",
+        "email": "",
+        "url": ""
+    }
+}

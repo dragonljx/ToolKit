@@ -1,0 +1,15 @@
+{
+    "name": "com.[LowerCompanyName].[LowerName]",
+    "version": "0.0.1",
+    "displayName": "[Name]",
+    "description": "[Description]",
+    "dependencies": {
+   },
+   "keywords": [
+    ],
+    "author": {
+      "name": "[CompanyName]",
+      "email": "[Email]",
+      "url": "[Url]"
+    }
+  }
