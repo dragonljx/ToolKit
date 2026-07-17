@@ -32,7 +32,7 @@ using System;
 using System.Collections.Generic;
 
 
-namespace ToolKits
+namespace ToolKit
 {
 
     /// <summary>

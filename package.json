@@ -1,7 +1,7 @@
 {
-    "name": "com.dragon.toolkits",
+    "name": "com.dragon.toolkit",
     "version": "1.0.0",
-    "displayName": "Tool Kits",
+    "displayName": "Tool Kit",
     "description": "\u5e38\u7528\u57fa\u672c\u5de5\u5177",
     "keywords": [
         "toolkit",

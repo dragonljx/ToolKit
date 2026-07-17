@@ -2,16 +2,12 @@ using System;
 using System.Collections;
 using UnityEngine;
 
-namespace ToolKits
+namespace ToolKit
 {
 
     public class ToolTexture
     {
 #if SCREEN_CAPTURE
-        public static void CaptureScreen(Action<Texture2D> callback, Rect rect = new Rect())
-        {
-            TimerDispatcher.RunCoroutine(Capture(callback, rect));
-        }
         public static IEnumerator Capture(Action<Texture2D> callback, Rect rect = new Rect())
         {
             yield return new WaitForEndOfFrame();
@@ -109,7 +105,7 @@ namespace ToolKits
             rt.filterMode = FilterMode.Point;
             RenderTexture.active = rt;
             Graphics.Blit(source, rt);
-            var nTex = new Texture2D(newWidth, newHeight,TextureFormat.RGBA32,false);
+            var nTex = new Texture2D(newWidth, newHeight, TextureFormat.RGBA32, false);
             nTex.ReadPixels(new Rect(0, 0, newWidth, newHeight), 0, 0);
             nTex.Apply();
             RenderTexture.active = null;

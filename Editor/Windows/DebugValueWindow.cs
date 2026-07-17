@@ -1,8 +1,5 @@
-using System.Collections;
 using System.Collections.Generic;
 using UnityEditor;
-using UnityEditor.Experimental.GraphView;
-using UnityEngine;
 using UnityEngine.UIElements;
 
 namespace ToolKitsEditor
@@ -19,12 +16,12 @@ namespace ToolKitsEditor
             container.style.paddingLeft = new StyleLength(20);
             container.style.paddingTop = new StyleLength(20);
             container.style.paddingRight = new StyleLength(20);
- 
+
             rootVisualElement.Add(container);
 
-            
+
             instance = this; // 保证 CreateGUI 时刷新实例
- 
+
         }
         private void OnEnable()
         {
@@ -57,7 +54,7 @@ namespace ToolKitsEditor
             {
                 label = new Label();
                 container.Add(label);
-                
+
                 debugLabels[name] = label;
             }
             label.text = $"{name} -> {value}";

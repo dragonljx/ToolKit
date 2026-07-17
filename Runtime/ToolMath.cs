@@ -1,9 +1,8 @@
 
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.UIElements;
 
-namespace ToolKits
+namespace ToolKit
 {
 
     public static class ToolMath
@@ -70,6 +69,6 @@ namespace ToolKits
 
             return randoms;
         }
-         
+
     }
 }

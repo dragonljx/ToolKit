@@ -4,11 +4,14 @@ using System.IO;
 using System.Text;
 using UnityEngine;
 using UnityEngine.Networking;
+
 #if NEWTONSOFT_JSON
+
 using Newtonsoft.Json;
+
 #endif
 
-namespace ToolKits
+namespace ToolKit
 {
     public static class ToolFile
     {
@@ -48,7 +51,6 @@ namespace ToolKits
                 return false;
             }
         }
-
 
         #region 文件读写
 
@@ -274,6 +276,6 @@ namespace ToolKits
             }
         }
 
-        #endregion
+        #endregion 文件读写
     }
 }

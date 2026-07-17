@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Reflection;
-using ToolKits;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.UIElements;
@@ -33,7 +32,7 @@ namespace ToolKitsEditor
         {
             _styleSheet =
                 AssetDatabase.LoadAssetAtPath<StyleSheet>(
-                    "Packages/dragon.toolkits/Editor/CustomToolbar/ToolbarStyle.uss");
+                    "Packages/dragon.toolkit/Editor/CustomToolbar/ToolbarStyle.uss");
             _drawUI = new List<ToolbarUI>();
             EditorApplication.update -= OnUpdate;
             EditorApplication.update += OnUpdate;

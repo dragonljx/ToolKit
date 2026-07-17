@@ -1,6 +1,6 @@
 using System;
 using System.Runtime.InteropServices;
-namespace ToolKits
+namespace ToolKit
 {
 
     public static class ToolMemory
@@ -39,12 +39,12 @@ namespace ToolKits
         {
             return (T)Marshal.PtrToStructure(info, typeof(T));
         }
-        public static void BytesAddInt(byte[] buffer,int startIndex,int intValue)
+        public static void BytesAddInt(byte[] buffer, int startIndex, int intValue)
         {
             buffer[startIndex] = (byte)(intValue & 0xFF);           // 获取最低字节
-            buffer[startIndex+1] = (byte)((intValue >> 8) & 0xFF);  // 获取第二个字节
-            buffer[startIndex+2] = (byte)((intValue >> 16) & 0xFF); // 获取第三个字节
-            buffer[startIndex+3] = (byte)((intValue >> 24) & 0xFF); // 获取最高字节
+            buffer[startIndex + 1] = (byte)((intValue >> 8) & 0xFF);  // 获取第二个字节
+            buffer[startIndex + 2] = (byte)((intValue >> 16) & 0xFF); // 获取第三个字节
+            buffer[startIndex + 3] = (byte)((intValue >> 24) & 0xFF); // 获取最高字节
         }
     }
 }

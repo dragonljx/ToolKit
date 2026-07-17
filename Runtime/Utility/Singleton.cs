@@ -1,64 +1,115 @@
 using UnityEngine;
 
-namespace ToolKits
+namespace ToolKit
 {
     /// <summary>
-    /// 单例类
+    /// MonoBehaviour 泛型单例基类
     /// </summary>
-    /// <typeparam name="T">单例的类型</typeparam>
+    /// <typeparam name="T">单例类型</typeparam>
     public class Singleton<T> : MonoBehaviour where T : Singleton<T>
     {
-        private static T _instance;
+        internal static T _instance;
 
+        private static readonly object _lock = new object();
+
+        /// <summary>
+        /// 单例实例
+        /// </summary>
         public static T Instance
         {
             get
             {
-                try
+                if (_instance == null)
                 {
-                    if (_instance == null)
+                    lock (_lock)
                     {
-                        _instance = (T)FindFirstObjectByType(typeof(T));
-
-                        if (FindObjectsByType(typeof(T), FindObjectsSortMode.None).Length > 1)
-                        {
-                            Debug.LogError("单例出错了，出现了多个单例，重开场景解决问题！");
-                            return _instance;
-                        }
-
                         if (_instance == null)
                         {
-                            GameObject singleton = new GameObject("(Singleton) " + typeof(T).ToString());
-                            _instance = singleton.AddComponent<T>();
-
-                            DontDestroyOnLoad(singleton);
-
-                            //Debug.LogFormat("场景中没有脚本({0})，所以创建({1})脚本.", typeof(T), singleton);
-                        }
-                        else
-                        {
-                            DontDestroyOnLoad(_instance.gameObject);
-                            //Debug.Log("[Singleton] 已经创建单例: " + _instance.GetType().Name);
+                            CreateInstance();
                         }
                     }
-                }
-                catch (System.Exception e)
-                {
-                    Debug.LogWarning("不能在线程中初始化单例！" + e);
                 }
 
                 return _instance;
             }
-            set
-            {
-                if (_instance != null)
-                {
-                    Destroy(value);
-                    return;
-                }
 
+            protected set
+            {
                 _instance = value;
-                DontDestroyOnLoad(_instance);
+            }
+        }
+
+        /// <summary>
+        /// 创建单例
+        /// </summary>
+        private static void CreateInstance()
+        {
+#if UNITY_2022_2_OR_NEWER
+
+            _instance = FindFirstObjectByType<T>();
+
+            T[] instances = FindObjectsByType<T>(
+                FindObjectsSortMode.None
+            );
+
+#else
+
+            _instance = FindObjectOfType<T>();
+
+            T[] instances = FindObjectsOfType<T>();
+
+#endif
+
+            // 检查多个实例
+            if (instances.Length > 1)
+            {
+                Debug.LogError(
+                    $"[Singleton] 场景存在多个 {typeof(T).Name} 单例实例!"
+                );
+
+                return;
+            }
+
+            // 场景没有实例，自动创建
+            if (_instance == null)
+            {
+                GameObject obj = new GameObject(
+                    "(Singleton)" + typeof(T).Name
+                );
+
+                _instance = obj.AddComponent<T>();
+
+                DontDestroyOnLoad(obj);
+            }
+            else
+            {
+                DontDestroyOnLoad(_instance.gameObject);
+            }
+        }
+
+        protected virtual void Awake()
+        {
+            if (_instance == null)
+            {
+                _instance = this as T;
+
+                DontDestroyOnLoad(gameObject);
+            }
+            else if (_instance != this)
+            {
+                Debug.LogWarning(
+                    $"[Singleton] 销毁重复实例 {typeof(T).Name}"
+                );
+
+                Destroy(gameObject);
+            }
+        }
+
+        protected virtual void OnDestroy()
+        {
+            if (_instance == this)
+            {
+                _instance = null;
             }
         }
     }

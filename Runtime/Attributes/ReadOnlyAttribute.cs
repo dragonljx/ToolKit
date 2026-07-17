@@ -2,7 +2,7 @@
 using System.Diagnostics;
 using UnityEngine;
 
-namespace ToolKits
+namespace ToolKit
 {
     /// <summary>
     /// Marks serialized field as read-only.
@@ -11,6 +11,6 @@ namespace ToolKits
     /// </summary>
     [AttributeUsage(AttributeTargets.Field, AllowMultiple = false)]
     [Conditional("UNITY_EDITOR")]
-    public class ReadOnlyAttribute : PropertyAttribute 
+    public class ReadOnlyAttribute : PropertyAttribute
     { }
 }

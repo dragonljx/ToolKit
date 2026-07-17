@@ -1,9 +1,8 @@
 ﻿using System.Collections.Generic;
 using System.Diagnostics;
 
-namespace ToolKits
+namespace ToolKit
 {
-
     public static class Tool
     {
         public static string Cmd(string arguments)
@@ -24,15 +23,14 @@ namespace ToolKits
 
                     return process.StandardOutput.ReadToEnd();
                 }
-
             }
             catch (System.Exception e)
             {
                 UnityEngine.Debug.LogError(e);
             }
             return "";
-
         }
+
         public static void RunProcess(string command, string arguments)
         {
             try
@@ -54,24 +52,21 @@ namespace ToolKits
                         if (!string.IsNullOrEmpty(str.Data))
                         {
                             UnityEngine.Debug.Log(str.Data);
-
                         }
                     };
                     process.Exited += (sender, e) => UnityEngine.Debug.LogError(e.ToString());
                     process.Start();//启动程序
                     process.BeginOutputReadLine();
                     process.WaitForExit();
-
                 }
-
             }
             catch (System.Exception e)
             {
                 UnityEngine.Debug.LogError(e);
             }
-
         }
-        public unsafe static bool CompareBytes(byte[] x, byte[] y)
+
+        public static unsafe bool CompareBytes(byte[] x, byte[] y)
         {
             if (ReferenceEquals(x, y)) return true;
             if (x is null || y is null) return false;
@@ -82,6 +77,7 @@ namespace ToolKits
                 return UlongCompareInternal(xPtr, yPtr, x.Length);
             }
         }
+
         private static unsafe bool UlongCompareInternal(byte* xPtr, byte* yPtr, int length)
         {
             // 指针+偏移量计算出数组最后一个元素地址
@@ -112,6 +108,7 @@ namespace ToolKits
             }
             return true;
         }
+
         /// <summary>
         /// 获取顺序缺失数字
         /// </summary>
@@ -122,6 +119,7 @@ namespace ToolKits
         {
             return GetSequentialMissingsCore(data, rangeStart, rangeEnd);
         }
+
         /// <summary>
         /// 获取顺序缺失数字
         /// </summary>
@@ -160,5 +158,4 @@ namespace ToolKits
             return missing.ToArray();
         }
     }
-
 }

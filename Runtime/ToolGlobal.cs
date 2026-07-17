@@ -1,4 +1,4 @@
-namespace ToolKits
+namespace ToolKit
 {
     public static class ToolGlobal
     {
@@ -6,5 +6,4 @@ namespace ToolKits
         public const string GameObjectMenuName = "GameObject/Tool Kit/";
         public const string ToolKitMenuName = "Tool Kit/";
     }
-
 }

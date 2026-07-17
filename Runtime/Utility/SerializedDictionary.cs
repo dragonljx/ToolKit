@@ -2,12 +2,16 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+
 #if UNITY_EDITOR
+
 using UnityEditor;
+
 #endif
+
 using UnityEngine;
 
-namespace ToolKits
+namespace ToolKit
 {
     [Serializable]
     public class SerializedDictionary<TKey, TValue> : ISerializationCallbackReceiver, IDictionary<TKey, TValue>
@@ -35,7 +39,8 @@ namespace ToolKits
         }
 
         // 序列化回调
-        public void OnBeforeSerialize() { }
+        public void OnBeforeSerialize()
+        { }
 
         public void OnAfterDeserialize()
         {
@@ -117,7 +122,7 @@ namespace ToolKits
             return false;
         }
 
-        #endregion
+        #endregion IDictionary<TKey, TValue>
 
         #region ICollection<KeyValuePair<TKey, TValue>>
 
@@ -156,7 +161,7 @@ namespace ToolKits
             return Remove(kvp.Key);
         }
 
-        #endregion
+        #endregion ICollection<KeyValuePair<TKey, TValue>>
 
         #region IEnumerable<KeyValuePair<TKey, TValue>>
 
@@ -167,10 +172,11 @@ namespace ToolKits
 
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
-        #endregion
+        #endregion IEnumerable<KeyValuePair<TKey, TValue>>
     }
 
 #if UNITY_EDITOR
+
     [CustomPropertyDrawer(typeof(SerializedDictionary<,>), true)]
     public class SerializedDictionaryDrawer : PropertyDrawer
     {
@@ -189,5 +195,6 @@ namespace ToolKits
             return EditorGUI.GetPropertyHeight(GetListProperty(property), true);
         }
     }
+
 #endif
 }

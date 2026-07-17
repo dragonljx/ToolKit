@@ -1,6 +1,6 @@
 using System;
 using UnityEngine;
-namespace ToolKits
+namespace ToolKit
 {
     /// <summary>
     /// 注册表信息读写

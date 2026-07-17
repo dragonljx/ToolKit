@@ -1,5 +1,5 @@
 ﻿using System.Diagnostics;
-using ToolKits;
+using ToolKit;
 using UnityEditor;
 using UnityEditor.PackageManager;
 using UnityEngine;
@@ -15,7 +15,6 @@ namespace ToolKitsEditor
             wnd.titleContent = new GUIContent("CreatePackage");
         }
 
-
         [MenuItem(ToolGlobal.ToolKitMenuName + "数值调试窗口", priority = -1002)]
         public static void ShowDebugValueWindow()
         {
@@ -27,7 +26,7 @@ namespace ToolKitsEditor
         public static void EditorIconsOpen()
         {
 #if UNITY_2018
-        var w = GetWindow<EditorIcons>("Editor Icons");
+            var w = GetWindow<EditorIcons>("Editor Icons");
 #else
             var w = EditorWindow.CreateWindow<EditorIcons>("Editor Icons");
 #endif

@@ -3,12 +3,12 @@ using UnityEditor;
 using UnityEditor.VersionControl;
 using UnityEngine;
 
-namespace ToolKits.Editor
+namespace ToolKit.Editor
 {
     [CustomPropertyDrawer(typeof(SceneSerialized))]
     public class SceneSerializedDrawer : PropertyDrawer
     {
-         // The exact name of the asset Object variable in the SceneReference object
+        // The exact name of the asset Object variable in the SceneReference object
         private const string sceneAssetPropertyString = "sceneAsset";
         // The exact name of the scene Path variable in the SceneReference object
         private const string scenePathPropertyString = "scenePath";

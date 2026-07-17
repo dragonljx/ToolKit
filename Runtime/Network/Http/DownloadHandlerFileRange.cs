@@ -1,20 +1,20 @@
-using UnityEngine.Networking;
-using System.IO;
 using System;
+using System.IO;
 using UnityEngine;
+using UnityEngine.Networking;
 
-namespace ToolKits
+namespace ToolKit
 {
     /// <summary>
     /// 使用方式:
     /// UnityWebRequest unityWebRequest = new UnityWebRequest("url");
     /// unityWebRequest.downloadHandler = new DownloadHandlerFileRange("文件保存的路径", unityWebRequest);
     /// unityWebRequest.SendWebRequest();
-    /// 
+    ///
     /// 参考自： https://gist.github.com/TouiSoraHe/19f2afeee1334cb8e42b3c8f2c283a65
     /// 更完整的使用方式见：DownloadPatchSupportResume()方法
     /// </summary>
-    public class DownloadHandlerFileRange : DownloadHandlerScript,IDisposable
+    public class DownloadHandlerFileRange : DownloadHandlerScript, IDisposable
     {
         /// <summary>
         /// 文件正式开始下载事件,此事件触发以后即可获取到文件的总大小
@@ -47,8 +47,8 @@ namespace ToolKits
             get { return GetProgress(); }
         }
 
-        #endregion
- 
+        #endregion 属性
+
         private readonly string path; //文件保存的路径
         private FileStream fileStream;
         private UnityWebRequest unityWebRequest;
@@ -59,7 +59,7 @@ namespace ToolKits
         private float lastDataSize = 0; //用来作为下载速度的大小统计
         private float downloadSpeed = 0; //下载速度,单位:Byte/S
         private bool disposed = false;
- 
+
         #region 公共方法
 
         /// <summary>
@@ -69,7 +69,7 @@ namespace ToolKits
         /// <param name="request">UnityWebRequest对象,用来获文件大小,设置断点续传的请求头信息</param>
         public DownloadHandlerFileRange(string path, UnityWebRequest request) : base(new byte[1024 * 1024])
         {
-            TLog.Log("Download", "下载开始");
+            TLog.Log(tag: "Download", "下载开始");
 
             this.path = path;
             fileStream = new FileStream(this.path, FileMode.Append, FileAccess.Write);
@@ -81,9 +81,8 @@ namespace ToolKits
 
             curFileSize = localFileSize;
             unityWebRequest.SetRequestHeader("Range", "bytes=" + localFileSize + "-");
- 
-            TLog.Log("Download", $"本地文件大小{localFileSize}");
 
+            TLog.Log("Download", $"本地文件大小{localFileSize}");
         }
 
         /// <summary>
@@ -107,13 +106,14 @@ namespace ToolKits
 
             disposed = true;
         }
+
         public void ManualDispose()
         {
             TLog.Log("Download", "手动关闭");
             Clean();
         }
 
-        #endregion
+        #endregion 公共方法
 
         #region 私有方法
 
@@ -123,7 +123,7 @@ namespace ToolKits
         private void Clean()
         {
             TLog.Log("Download", "关闭下载流");
-            
+
             downloadSpeed = 0.0f;
             if (fileStream != null)
             {
@@ -131,10 +131,9 @@ namespace ToolKits
                 fileStream.Dispose();
                 fileStream = null;
             }
- 
         }
 
-        #endregion
+        #endregion 私有方法
 
         #region 私有继承的方法
 
@@ -175,11 +174,10 @@ namespace ToolKits
         {
             return null;
         }
- 
+
         //Note:当下载的文件数据大于2G时,该int类型的参数将会数据溢出,所以先自己通过响应头来获取长度,获取不到再使用参数的方式
         protected override void ReceiveContentLength(int contentLength)
         {
-   
             TLog.Log("Download", $"接收长度{contentLength}");
             string contentLengthStr = unityWebRequest.GetResponseHeader("Content-Length");
 
@@ -191,15 +189,14 @@ namespace ToolKits
                 }
                 catch (System.FormatException e)
                 {
-                       
                     TLog.Log("Download", $"获取文件长度失败，{contentLengthStr},{e.Message}");
- 
+
                     totalFileSize = contentLength;
                 }
                 catch (System.Exception e)
                 {
                     TLog.Log("Download", $"获取文件长度失败，{contentLengthStr},{e.Message}");
- 
+
                     totalFileSize = contentLength;
                 }
             }
@@ -211,8 +208,8 @@ namespace ToolKits
             if (unityWebRequest.responseCode == 200)
             {
                 TLog.Log("Download", "服务器不支持 Range 请求，准备清除旧文件");
-                Clean();  
-                
+                Clean();
+
                 if (File.Exists(path))
                 {
                     File.Delete(path);
@@ -230,13 +227,13 @@ namespace ToolKits
                 StartDownloadEvent();
             }
         }
-        
+
         protected override bool ReceiveData(byte[] data, int dataLength)
         {
             if (data == null || dataLength == 0 || unityWebRequest.responseCode > 400)
             {
                 TLog.Log("Download", $"接收数据返回错误 数据：{data} 长度：{dataLength} 响应码：{unityWebRequest.responseCode}");
-       
+
                 return false;
             }
 
@@ -249,7 +246,7 @@ namespace ToolKits
                 TLog.Log("Download", $"写入文件失败：{ex.Message}");
                 return false;
             }
-            
+
             curFileSize += dataLength;
             //统计下载速度
             if (UnityEngine.Time.time - lastTime >= 1.0f)
@@ -264,12 +261,10 @@ namespace ToolKits
 
         ~DownloadHandlerFileRange()
         {
-            TLog.Log("Download"," ~DownloadHandlerFileRange()");
+            TLog.Log("Download", " ~DownloadHandlerFileRange()");
             Dispose(false);
         }
 
-        #endregion
-
-
+        #endregion 私有继承的方法
     }
 }

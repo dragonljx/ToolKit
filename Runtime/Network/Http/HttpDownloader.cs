@@ -1,11 +1,10 @@
 using System;
 using System.Collections;
-using System.Collections.Generic;
 using System.IO;
 using UnityEngine;
 using UnityEngine.Networking;
 
-namespace ToolKits
+namespace ToolKit
 {
     public class HttpDownloader
     {
@@ -66,7 +65,6 @@ namespace ToolKits
                 }
             }
 
-
             using UnityWebRequest request = UnityWebRequest.Get(currentFileUrl);
             downloadHandler = new DownloadHandlerFileRange(currentFullPath, request);
             request.downloadHandler = downloadHandler;
@@ -107,12 +105,11 @@ namespace ToolKits
                 {
                     try
                     {
-                        File.Move(currentFullPath,  LocalPath);
-
+                        File.Move(currentFullPath, LocalPath);
                     }
                     catch (Exception e)
                     {
-                        TLog.LogError(Tag,$"文件移动失败：{e.Message}");
+                        TLog.LogError(Tag, $"文件移动失败：{e.Message}");
                         isError = true;
                     }
                 }

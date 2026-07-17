@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 
-namespace ToolKits
+namespace ToolKit
 {
     public enum CurveLoopMode
     {

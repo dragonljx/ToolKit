@@ -1,6 +1,6 @@
 ﻿using System;
 using UnityEngine.Networking;
-namespace ToolKits
+namespace ToolKit
 {
     public class StreamDownloadHandler : DownloadHandlerScript
     {

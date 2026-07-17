@@ -6,11 +6,11 @@ using UnityEditor.SceneManagement;
 using UnityEngine;
 using Object = UnityEngine.Object;
 
-namespace ToolKits
+namespace ToolKit
 {
     [Serializable]
     public class SceneSerialized : ISerializationCallbackReceiver
- {
+    {
 #if UNITY_EDITOR
         // What we use in editor to select the scene
         [SerializeField] private Object sceneAsset;
@@ -49,7 +49,7 @@ namespace ToolKits
 #endif
             }
         }
-        
+
         [SerializeField]
         private string sceneName = string.Empty;
         public string SceneName
@@ -104,7 +104,7 @@ namespace ToolKits
         }
         private string GetSceneNameFromAsset()
         {
-            return sceneAsset == null ? string.Empty :(sceneAsset as SceneAsset)?.name;
+            return sceneAsset == null ? string.Empty : (sceneAsset as SceneAsset)?.name;
         }
         private string GetSceneNameFromPath()
         {
@@ -113,7 +113,7 @@ namespace ToolKits
         private void HandleBeforeSerialize()
         {
             // Asset is invalid but have Path to try and recover from
-            if (IsValidSceneAsset == false && string.IsNullOrEmpty(scenePath) == false &&string.IsNullOrEmpty(sceneName) == false)
+            if (IsValidSceneAsset == false && string.IsNullOrEmpty(scenePath) == false && string.IsNullOrEmpty(sceneName) == false)
             {
                 sceneAsset = GetSceneAssetFromPath();
                 if (sceneAsset == null)
@@ -139,7 +139,7 @@ namespace ToolKits
             if (IsValidSceneAsset) return;
 
             // Asset is invalid but have path to try and recover from
-            if (string.IsNullOrEmpty(scenePath)||string.IsNullOrEmpty(sceneName)) return;
+            if (string.IsNullOrEmpty(scenePath) || string.IsNullOrEmpty(sceneName)) return;
 
             sceneAsset = GetSceneAssetFromPath();
             // No asset found, path was invalid. Make sure we don't carry over the old invalid path
