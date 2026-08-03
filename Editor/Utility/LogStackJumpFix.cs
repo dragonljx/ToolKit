@@ -8,8 +8,8 @@ using UnityEditor;
 namespace ToolKit.Editor
 {
     /// <summary>
-    /// 双击 Console 面板中由 TLog 打印的日志时,自动跳转到真正的调用者代码行,
-    /// 而不是跳转到 TLog.cs 内部。
+    /// 双击 Console 面板中由 DLogger 打印的日志时,自动跳转到真正的调用者代码行,
+    /// 而不是跳转到 DLogger.cs 内部。
     /// 原理:拦截 OnOpenAsset 回调,反射读取 ConsoleWindow 当前选中日志的完整堆栈文本,
     /// 解析出第一个不属于日志包装文件的堆栈帧并跳转。
     /// 仅用于 Unity 2022.2 以下版本,新版本请改用 [HideInCallstack] 特性。
@@ -19,7 +19,7 @@ namespace ToolKit.Editor
         // 所有被视为"日志包装文件"的文件名,双击这些文件会尝试跳转到真正调用者
         private static readonly string[] LogWrapperFileNames =
         {
-            "TLog.cs",
+            "DLogger.cs",
         };
 
         private static Type _consoleWindowType;

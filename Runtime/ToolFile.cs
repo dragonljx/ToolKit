@@ -79,7 +79,7 @@ namespace ToolKit
             }
             catch (Exception e)
             {
-                TLog.LogError($"文件读取错误: {path}, 错误: {e.Message}");
+                DLogger.LogError($"文件读取错误: {path}, 错误: {e.Message}");
                 return string.Empty;
             }
         }
@@ -115,7 +115,7 @@ namespace ToolKit
             }
             catch (Exception e)
             {
-                TLog.LogError($"文件读取错误:{path} {e}");
+                DLogger.LogError($"文件读取错误:{path} {e}");
                 return null;
             }
         }
@@ -139,14 +139,14 @@ namespace ToolKit
         {
             if (data == null)
             {
-                TLog.LogError($"写入文件失败: 数据为空 -> {path}");
+                DLogger.LogError($"写入文件失败: 数据为空 -> {path}");
                 return;
             }
 
             FileStream file = GetFile(path, true);
             if (file == null)
             {
-                TLog.LogError($"写入文件失败: 无法获取文件流 -> {path}");
+                DLogger.LogError($"写入文件失败: 无法获取文件流 -> {path}");
                 return;
             }
 
@@ -159,11 +159,11 @@ namespace ToolKit
                     file.Write(data, 0, data.Length);
                 }
 
-                TLog.Log($"写入文件到: {path}");
+                DLogger.Log($"写入文件到: {path}");
             }
             catch (Exception ex)
             {
-                TLog.LogError($"写入文件失败: {path}, 错误: {ex.Message}");
+                DLogger.LogError($"写入文件失败: {path}, 错误: {ex.Message}");
             }
         }
 
@@ -190,18 +190,18 @@ namespace ToolKit
                 }
                 else if (autoCreate)
                 {
-                    TLog.LogWarning($"未找到文件，新创建: {path}");
+                    DLogger.LogWarning($"未找到文件，新创建: {path}");
                     return info.Create();
                 }
                 else
                 {
-                    TLog.LogWarning($"未找到文件: {path}");
+                    DLogger.LogWarning($"未找到文件: {path}");
                     return null;
                 }
             }
             catch (Exception ex)
             {
-                TLog.LogError($"打开文件失败: {path}, 错误: {ex.Message}");
+                DLogger.LogError($"打开文件失败: {path}, 错误: {ex.Message}");
                 return null;
             }
         }
@@ -268,7 +268,7 @@ namespace ToolKit
             yield return www.SendWebRequest();
             if (www.result == UnityWebRequest.Result.ConnectionError)
             {
-                TLog.Log(www.error);
+                DLogger.Log(www.error);
             }
             else
             {

@@ -20,7 +20,6 @@ namespace ToolKit
 
         public ButtonAttribute(string name = null, ButtonColor color = ButtonColor.Green, int order = 0)
         {
-
             Color = color switch
             {
                 ButtonColor.Green => Color.green,

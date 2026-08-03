@@ -135,7 +135,7 @@ namespace ToolKit
         {
             if (rangeEnd < rangeStart)
             {
-                TLog.LogError($"参数范围错误：rangeStart({rangeStart}) > rangeEnd({rangeEnd})");
+                DLogger.LogError($"参数范围错误：rangeStart({rangeStart}) > rangeEnd({rangeEnd})");
                 return System.Array.Empty<int>();
             }
 

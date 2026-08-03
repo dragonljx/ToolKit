@@ -35,9 +35,11 @@ namespace ToolKit
                 case CurveLoopMode.Loop:
                     CurrentTime = Mathf.Repeat(time, duration);
                     break;
+
                 case CurveLoopMode.PingPong:
                     CurrentTime = Mathf.PingPong(time, duration);
                     break;
+
                 case CurveLoopMode.Clamp:
                 default:
                     CurrentTime = Mathf.Clamp(time, 0f, duration);

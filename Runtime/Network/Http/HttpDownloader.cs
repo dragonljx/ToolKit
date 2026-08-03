@@ -31,7 +31,7 @@ namespace ToolKit
         {
             if (IsDownloadStarted)
             {
-                TLog.Log(Tag, "当前下载任务进行中");
+                DLogger.Log(Tag, "当前下载任务进行中");
                 OnFinished(false);
                 yield break;
             }
@@ -45,7 +45,7 @@ namespace ToolKit
             {
                 if (File.Exists(LocalPath))
                 {
-                    TLog.Log(Tag, "请求文件本地已存在");
+                    DLogger.Log(Tag, "请求文件本地已存在");
                     IsDownloadStarted = false;
                     OnFinished(true);
                     yield break;
@@ -55,7 +55,7 @@ namespace ToolKit
             {
                 if (File.Exists(LocalPath))
                 {
-                    TLog.Log(Tag, "强制重新下载，清理本地视频。");
+                    DLogger.Log(Tag, "强制重新下载，清理本地视频。");
                     File.Delete(LocalPath);
                 }
 
@@ -71,11 +71,11 @@ namespace ToolKit
 
             downloadHandler.StartDownloadEvent += OnStartDownload;
 
-            TLog.Log(Tag, "请求开始");
+            DLogger.Log(Tag, "请求开始");
 
             yield return request.SendWebRequest();
 
-            TLog.Log(Tag, $"请求完成 {request.isDone} {request.error}");
+            DLogger.Log(Tag, $"请求完成 {request.isDone} {request.error}");
 
             if (request.isHttpError)
             {
@@ -86,12 +86,12 @@ namespace ToolKit
                 if (request.responseCode != 416)
                 {
                     isError = true;
-                    TLog.Log(Tag, $"请求失败 ：{request.responseCode}");
+                    DLogger.Log(Tag, $"请求失败 ：{request.responseCode}");
                 }
             }
             else if (!string.IsNullOrEmpty(request.error))
             {
-                TLog.Log(Tag, $"请求失败 ：{request.error}");
+                DLogger.Log(Tag, $"请求失败 ：{request.error}");
                 isError = true;
             }
 
@@ -109,7 +109,7 @@ namespace ToolKit
                     }
                     catch (Exception e)
                     {
-                        TLog.LogError(Tag, $"文件移动失败：{e.Message}");
+                        DLogger.LogError(Tag, $"文件移动失败：{e.Message}");
                         isError = true;
                     }
                 }

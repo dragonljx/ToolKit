@@ -69,7 +69,7 @@ namespace ToolKit
         /// <param name="request">UnityWebRequest对象,用来获文件大小,设置断点续传的请求头信息</param>
         public DownloadHandlerFileRange(string path, UnityWebRequest request) : base(new byte[1024 * 1024])
         {
-            TLog.Log(tag: "Download", "下载开始");
+            DLogger.Log(tag: "Download", "下载开始");
 
             this.path = path;
             fileStream = new FileStream(this.path, FileMode.Append, FileAccess.Write);
@@ -82,7 +82,7 @@ namespace ToolKit
             curFileSize = localFileSize;
             unityWebRequest.SetRequestHeader("Range", "bytes=" + localFileSize + "-");
 
-            TLog.Log("Download", $"本地文件大小{localFileSize}");
+            DLogger.Log("Download", $"本地文件大小{localFileSize}");
         }
 
         /// <summary>
@@ -90,7 +90,7 @@ namespace ToolKit
         /// </summary>
         public override void Dispose()
         {
-            TLog.Log("Download", "Dispose()");
+            DLogger.Log("Download", "Dispose()");
             Dispose(true);
             GC.SuppressFinalize(this);
         }
@@ -109,7 +109,7 @@ namespace ToolKit
 
         public void ManualDispose()
         {
-            TLog.Log("Download", "手动关闭");
+            DLogger.Log("Download", "手动关闭");
             Clean();
         }
 
@@ -122,7 +122,7 @@ namespace ToolKit
         /// </summary>
         private void Clean()
         {
-            TLog.Log("Download", "关闭下载流");
+            DLogger.Log("Download", "关闭下载流");
 
             downloadSpeed = 0.0f;
             if (fileStream != null)
@@ -142,7 +142,7 @@ namespace ToolKit
         /// </summary>
         protected override void CompleteContent()
         {
-            TLog.Log("Download", "下载完成清理");
+            DLogger.Log("Download", "下载完成清理");
             base.CompleteContent();
             Clean();
         }
@@ -178,7 +178,7 @@ namespace ToolKit
         //Note:当下载的文件数据大于2G时,该int类型的参数将会数据溢出,所以先自己通过响应头来获取长度,获取不到再使用参数的方式
         protected override void ReceiveContentLength(int contentLength)
         {
-            TLog.Log("Download", $"接收长度{contentLength}");
+            DLogger.Log("Download", $"接收长度{contentLength}");
             string contentLengthStr = unityWebRequest.GetResponseHeader("Content-Length");
 
             if (!string.IsNullOrEmpty(contentLengthStr))
@@ -189,13 +189,13 @@ namespace ToolKit
                 }
                 catch (System.FormatException e)
                 {
-                    TLog.Log("Download", $"获取文件长度失败，{contentLengthStr},{e.Message}");
+                    DLogger.Log("Download", $"获取文件长度失败，{contentLengthStr},{e.Message}");
 
                     totalFileSize = contentLength;
                 }
                 catch (System.Exception e)
                 {
-                    TLog.Log("Download", $"获取文件长度失败，{contentLengthStr},{e.Message}");
+                    DLogger.Log("Download", $"获取文件长度失败，{contentLengthStr},{e.Message}");
 
                     totalFileSize = contentLength;
                 }
@@ -207,7 +207,7 @@ namespace ToolKit
 
             if (unityWebRequest.responseCode == 200)
             {
-                TLog.Log("Download", "服务器不支持 Range 请求，准备清除旧文件");
+                DLogger.Log("Download", "服务器不支持 Range 请求，准备清除旧文件");
                 Clean();
 
                 if (File.Exists(path))
@@ -232,7 +232,7 @@ namespace ToolKit
         {
             if (data == null || dataLength == 0 || unityWebRequest.responseCode > 400)
             {
-                TLog.Log("Download", $"接收数据返回错误 数据：{data} 长度：{dataLength} 响应码：{unityWebRequest.responseCode}");
+                DLogger.Log("Download", $"接收数据返回错误 数据：{data} 长度：{dataLength} 响应码：{unityWebRequest.responseCode}");
 
                 return false;
             }
@@ -243,7 +243,7 @@ namespace ToolKit
             }
             catch (IOException ex)
             {
-                TLog.Log("Download", $"写入文件失败：{ex.Message}");
+                DLogger.Log("Download", $"写入文件失败：{ex.Message}");
                 return false;
             }
 
@@ -261,7 +261,7 @@ namespace ToolKit
 
         ~DownloadHandlerFileRange()
         {
-            TLog.Log("Download", " ~DownloadHandlerFileRange()");
+            DLogger.Log("Download", " ~DownloadHandlerFileRange()");
             Dispose(false);
         }
 

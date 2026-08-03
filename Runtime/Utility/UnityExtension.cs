@@ -70,7 +70,7 @@ namespace ToolKit
         {
             foreach (var item in dic)
             {
-                TLog.Log($"Key: {item.Key}  Value: {item.Value}");
+                DLogger.Log($"Key: {item.Key}  Value: {item.Value}");
             }
         }
 
@@ -78,7 +78,7 @@ namespace ToolKit
         {
             foreach (var item in strList)
             {
-                TLog.Log(item);
+                DLogger.Log(item);
             }
         }
 
@@ -89,14 +89,14 @@ namespace ToolKit
                 foreach (var item in strList)
                 {
                     string str = customCall.Invoke(item);
-                    TLog.Log(str);
+                    DLogger.Log(str);
                 }
             }
             else
             {
                 foreach (var item in strList)
                 {
-                    TLog.Log(item);
+                    DLogger.Log(item);
                 }
             }
         }

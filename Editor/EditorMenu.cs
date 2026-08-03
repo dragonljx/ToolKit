@@ -38,7 +38,7 @@ namespace ToolKitsEditor
         public static void OpenPersistentDataPath()
         {
             string path = Application.persistentDataPath;
-            TLog.Log("打开路径: " + path);
+            ToolKit.DLogger.Log("打开路径: " + path);
 
             Process.Start(path);
         }

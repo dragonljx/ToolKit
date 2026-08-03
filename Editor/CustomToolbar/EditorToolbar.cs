@@ -5,7 +5,7 @@ using UnityEditor;
 using UnityEngine;
 using UnityEngine.UIElements;
 
-namespace ToolKitsEditor
+namespace ToolKit.Editor
 {
     public enum ToolbarLocation
     {
@@ -26,8 +26,7 @@ namespace ToolKitsEditor
         private static ScriptableObject _mCurrentToolbar;
         private static List<ToolbarUI> _drawUI;
         private static StyleSheet _styleSheet;
-        private static bool _isToolbarInitialized = false;
-
+  
         static EditorToolbar()
         {
             _styleSheet =

@@ -264,12 +264,28 @@ namespace ToolKit
 #endif
 
         // ============= 添加单键 =============
-        public static InputBindingHandle AddKey(InputKey key, InputEventType type, Action action)
+        public static InputBindingHandle AddKey(InputKey key,  Action action)
         {
 #if ENABLE_INPUT_SYSTEM
-            return AddKeyNew(key, type, action);
+            return AddKeyNew(key, InputEventType.Hold, action);
 #else
-            return AddKeyOld(key, type, action);
+            return AddKeyOld(key, InputEventType.Hold, action);
+#endif
+        }
+        public static InputBindingHandle AddKeyDown(InputKey key,  Action action)
+        {
+#if ENABLE_INPUT_SYSTEM
+            return AddKeyNew(key, InputEventType.Down, action);
+#else
+            return AddKeyOld(key, InputEventType.Down, action);
+#endif
+        }
+        public static InputBindingHandle AddKeyUp(InputKey key, Action action)
+        {
+#if ENABLE_INPUT_SYSTEM
+            return AddKeyNew(key, InputEventType.Up, action);
+#else
+            return AddKeyOld(key, InputEventType.Up, action);
 #endif
         }
 
@@ -615,12 +631,11 @@ namespace ToolKit
             Instance._keyBindings.Clear();
         }
 #endif
-
-        private void OnDestroy()
+        protected override void OnDestroy()
         {
             Clear();
         }
-
+ 
         // ============= Update循环 =============
 #if !ENABLE_INPUT_SYSTEM
         // 旧版Input Manager需要使用Update轮询
