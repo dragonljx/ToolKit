@@ -12,7 +12,7 @@ namespace ToolKit
         /// <typeparam name="T"></typeparam>
         /// <param name="info"></param>
         /// <returns></returns>
-        [MethodImpl]
+        [MethodImpl(methodImplOptions:MethodImplOptions.AggressiveInlining)]
         public static IntPtr StructToIntPtr<T>(T info)
         {
             int size = Marshal.SizeOf(info);
@@ -24,7 +24,7 @@ namespace ToolKit
         /// <summary>
         /// 释放 StructToIntPtr 申请的非托管内存
         /// </summary>
-        [MethodImpl]
+        [MethodImpl(methodImplOptions: MethodImplOptions.AggressiveInlining)]
         public static void FreeIntPtr(IntPtr ptr)
         {
             if (ptr != IntPtr.Zero)
@@ -38,13 +38,13 @@ namespace ToolKit
         /// <typeparam name="T"></typeparam>
         /// <param name="info"></param>
         /// <returns></returns>
-        [MethodImpl]
+        [MethodImpl(methodImplOptions: MethodImplOptions.AggressiveInlining)]
         public static T IntPtrToStruct<T>(IntPtr info)
         {
             return (T)Marshal.PtrToStructure(info, typeof(T));
         }
 
-        [MethodImpl]
+        [MethodImpl(methodImplOptions: MethodImplOptions.AggressiveInlining)]
         public static void BytesAddInt(byte[] buffer, int startIndex, int intValue)
         {
             buffer[startIndex] = (byte)(intValue & 0xFF);           // 获取最低字节
