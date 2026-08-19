@@ -1,3 +1,38 @@
-.custom-overflow{
-    overflow:visible;
+/* 防止 Toolbar 子元素裁剪 */
+.custom-toolbar-overflow {
+    overflow: visible;
 }
+
+
+/* Toolbar Button */
+.custom-toolbar-button {
+    overflow: visible;
+    padding-left: 8px;
+    padding-right: 8px;
+}
+
+
+/* Toolbar Dropdown */
+.custom-toolbar-dropdown {
+    overflow: visible;
+}
+
+
+/*
+    调整 Toolbar 内控件高度
+    Unity Toolbar 默认高度约 22px
+*/
+.custom-toolbar-element {
+    height: 22px;
+    min-height: 22px;
+    max-height: 22px;
+}
+
+
+/*
+    DropdownField箭头位置修正
+*/
+.custom-toolbar-dropdown .unity-base-popup-field__arrow {
+    margin-right: 2px;
+}
+ 

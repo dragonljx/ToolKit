@@ -1,5 +1,5 @@
 {
-    "name": "Toolkit.Runtime",
+    "name": "ToolKit.Runtime",
     "rootNamespace": "ToolKit",
     "references": [
         "GUID:75469ad4d38634e559750d17036d5f7c"
@@ -15,7 +15,7 @@
     "defineConstraints": [],
     "versionDefines": [
         {
-            "name": "dragon.toolkits",
+            "name": "com.dragon.toolkit",
             "expression": "",
             "define": "UNITY_ENGINE"
         },

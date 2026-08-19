@@ -4,7 +4,7 @@ using UnityEditor.PackageManager;
 using UnityEditor.PackageManager.Requests;
 using UnityEngine;
 
-namespace ToolKitsEditor
+namespace ToolKit.Editor
 {
     public class PackageContextMenu
     {

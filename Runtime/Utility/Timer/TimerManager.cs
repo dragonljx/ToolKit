@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace ToolKit
 {
-    public class TimerManager : Singleton<TimerManager>
+    public class TimerManager : SingletonMono<TimerManager>
     {
 
         private readonly List<AbstractTimer> timers = new List<AbstractTimer>();

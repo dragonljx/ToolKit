@@ -8,29 +8,24 @@ namespace ToolKit
         Green,
         Red,
         Yellow,
-        Blue
+        Blue,
+        White
     }
 
     [AttributeUsage(AttributeTargets.Method, Inherited = true, AllowMultiple = false)]
     public sealed class ButtonAttribute : Attribute
     {
         public string Name;
-        public Color Color;
+        public ButtonColor Color;
         public int Order;
+        public string Group;
 
-        public ButtonAttribute(string name = null, ButtonColor color = ButtonColor.Green, int order = 0)
+
+        public ButtonAttribute(string name = null, ButtonColor color = ButtonColor.White, string group = "", int order = 0)
         {
-            Color = color switch
-            {
-                ButtonColor.Green => Color.green,
-                ButtonColor.Red => Color.red,
-                ButtonColor.Yellow => Color.yellow,
-                ButtonColor.Blue => Color.blue,
-                _ => Color.green
-            };
-
+            Color = color;
             Name = name;
-
+            Group = group;
             Order = order;
         }
     }

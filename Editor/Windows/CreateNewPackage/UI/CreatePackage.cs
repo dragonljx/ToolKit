@@ -6,7 +6,7 @@ using UnityEngine;
 using UnityEngine.UIElements;
 
 
-namespace ToolKit
+namespace ToolKit.Editor
 {
 
     public class CreatePackage : EditorWindow
@@ -36,7 +36,7 @@ namespace ToolKit
         private string DescriptionText = "";
         HelpBox help;
 
-        private const string FresetFilePath = "Packages/dragon.toolkits/Editor/Windows/CreateNewPackage";
+        private const string FresetFilePath = "Packages/com.dragon.toolkit/Editor/Windows/CreateNewPackage";
         private const string FresetFileName = ".FresetFile";
         private const string NameTag = "[Name]";
         private const string LowerNameTag = "[LowerName]";

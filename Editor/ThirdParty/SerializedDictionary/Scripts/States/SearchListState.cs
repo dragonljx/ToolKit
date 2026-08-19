@@ -47,6 +47,7 @@ namespace ToolKit.SerializedDictionary.Editor
 
         public override void OnExit()
         {
+            Clear();
         }
 
         public override ListState OnUpdate()
@@ -100,6 +101,18 @@ namespace ToolKit.SerializedDictionary.Editor
             var indexToAdd = _searchResults[index].Index;
             Drawer.ListProperty.InsertArrayElementAtIndex(indexToAdd);
             PerformSearch(_lastSearch);
+        }
+
+        public override int GetRealArrayIndex(int index)
+        {
+            return _searchResults[index].Index;
+        }
+
+        public void Clear()
+        {
+            _lastSearch = string.Empty;
+            _searchResults.Clear();
+            _foundProperties?.Clear();
         }
     }
 }

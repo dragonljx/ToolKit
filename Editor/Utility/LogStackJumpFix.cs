@@ -1,5 +1,5 @@
 #if !UNITY_2022_2_OR_NEWER
-// Unity 2022.2 及以上版本请直接在 TLog 的方法上使用 [HideInCallstack] 特性,
+// Unity 2022.2 及以上版本请直接在 DLogger 的方法上使用 [HideInCallstack] 特性,
 // 原生支持双击跳转到真正调用者,不再需要这套反射方案。
 using System;
 using System.Reflection;

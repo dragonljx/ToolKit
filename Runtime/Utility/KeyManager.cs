@@ -251,7 +251,7 @@ namespace ToolKit
     }
 
     // ============= InputManager 主类 =============
-    public class InputManager : ToolKit.Singleton<InputManager>
+    public class InputManager : ToolKit.SingletonMono<InputManager>
     {
 #if ENABLE_INPUT_SYSTEM
         // 新Input System使用InputAction字典

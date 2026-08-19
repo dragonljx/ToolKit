@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine.UIElements;
 
-namespace ToolKitsEditor
+namespace ToolKit.Editor
 {
     public class DebugValueWindow : EditorWindow
     {

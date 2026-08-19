@@ -4,7 +4,7 @@ using UnityEditor;
 using UnityEditor.PackageManager;
 using UnityEngine;
 
-namespace ToolKitsEditor
+namespace ToolKit.Editor
 {
     public class PackageProfileSwitcher : EditorWindow
     {
@@ -20,7 +20,7 @@ namespace ToolKitsEditor
                         "com.unity.textmeshpro",
                         "com.unity.modules.audio",
                         "com.unity.modules.ui",
-                        "dragon.toolkits",
+                        "com.dragon.toolkit",
                         "com.unity.ide.rider"
                     },
                     Remove = new[]

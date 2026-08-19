@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Reflection;
 using UnityEditor;
@@ -16,107 +16,219 @@ namespace ToolKit.Editor
     [InitializeOnLoad]
     public static class EditorToolbar
     {
-        struct ToolbarUI
+        private struct ToolbarUI
         {
-            public VisualElement UI;
+            public Func<VisualElement> Factory;
             public ToolbarLocation Location;
         }
 
-        private static readonly Type MToolbarType = typeof(UnityEditor.Editor).Assembly.GetType("UnityEditor.Toolbar");
-        private static ScriptableObject _mCurrentToolbar;
-        private static List<ToolbarUI> _drawUI;
+        private static readonly Type ToolbarType =
+            typeof(UnityEditor.Editor).Assembly.GetType(
+                "UnityEditor.Toolbar");
+
+        private static readonly List<ToolbarUI> DrawUI = new();
+
+        private static ScriptableObject _toolbar;
+
         private static StyleSheet _styleSheet;
-  
+
         static EditorToolbar()
         {
             _styleSheet =
                 AssetDatabase.LoadAssetAtPath<StyleSheet>(
                     "Packages/dragon.toolkit/Editor/CustomToolbar/ToolbarStyle.uss");
-            _drawUI = new List<ToolbarUI>();
+
             EditorApplication.update -= OnUpdate;
             EditorApplication.update += OnUpdate;
         }
 
-
-        public static void AddDropdownField(List<string> choices, Func<string, string> selectorCallback,
-            ToolbarLocation location, Action<DropdownField> clickCallback = null)
+        public static void AddButtonRight(string text, Action callback = null) => AddButton(text, callback, ToolbarLocation.Right);
+        public static void AddButtonLift(string text, Action callback = null) => AddButton(text, callback, ToolbarLocation.Left);
+        public static void AddButton(string text, Action callback = null, ToolbarLocation location = ToolbarLocation.Right)
         {
-            DropdownField dropdownField = new DropdownField(choices, 0, selectorCallback);
-            if (clickCallback != null)
+            AddElement(() =>
             {
-                dropdownField.RegisterCallback<MouseDownEvent>(evt => clickCallback.Invoke(dropdownField));
-            }
+                var button = new Button(callback)
+                {
+                    text = text
+                };
 
-            dropdownField.hierarchy.ElementAt(0).style.overflow = Overflow.Visible;
-            AddDrawUI(dropdownField, location);
+                /*
+                    Unity Toolbar Button样式
+                */
+                button.AddToClassList(
+                    "unity-toolbar-button");
+
+                button.AddToClassList(
+                    "custom-toolbar-button");
+
+                button.AddToClassList(
+                    "custom-toolbar-element");
+
+                return button;
+            }, location);
         }
 
-        public static void AddButton(string buttonText, Action callback, ToolbarLocation location)
+        public static void AddDropdownField(
+            List<string> choices,
+            Func<string, string> selector,
+            ToolbarLocation location = ToolbarLocation.Right,
+            Action<DropdownField> click = null)
         {
-            Button button = new Button(callback);
-            button.text = buttonText;
-            button.style.overflow = Overflow.Visible;
-            AddDrawUI(button, location);
+            AddElement(() =>
+            {
+                var dropdown =
+                    new DropdownField(
+                        choices,
+                        0,
+                        selector);
+
+                if (click != null)
+                {
+                    dropdown.RegisterCallback<MouseDownEvent>(
+                        _ => click(dropdown));
+                }
+
+                /*
+                    Unity Toolbar Dropdown样式
+                */
+                dropdown.AddToClassList(
+                    "unity-toolbar-dropdown");
+
+                dropdown.AddToClassList(
+                    "custom-toolbar-dropdown");
+
+                dropdown.AddToClassList(
+                    "custom-toolbar-element");
+
+                return dropdown;
+            }, location);
         }
 
-        static void AddDrawUI(VisualElement ui, ToolbarLocation location)
+        public static void AddElement<T>(
+            ToolbarLocation location = ToolbarLocation.Right)
+            where T : VisualElement, new()
         {
-            _drawUI.Add(new ToolbarUI()
+            AddElement(
+                () => new T(),
+                location);
+        }
+
+        private static void AddElement(
+            Func<VisualElement> factory,
+            ToolbarLocation location)
+        {
+            DrawUI.Add(new ToolbarUI
             {
-                UI = ui,
+                Factory = factory,
                 Location = location
             });
+
+            _toolbar = null;
         }
 
         private static void OnUpdate()
         {
-            if (_mCurrentToolbar != null) return;
-            var toolbars = Resources.FindObjectsOfTypeAll(MToolbarType);
-            _mCurrentToolbar = toolbars.Length > 0 ? (ScriptableObject)toolbars[0] : null;
+            if (_toolbar != null)
+                return;
 
-            if (_mCurrentToolbar == null) return;
-            var root = _mCurrentToolbar.GetType()
-                .GetField("m_Root", BindingFlags.NonPublic | BindingFlags.Instance);
-            var mRoot = root?.GetValue(_mCurrentToolbar) as VisualElement;
+            var toolbars =
+                Resources.FindObjectsOfTypeAll(
+                    ToolbarType);
 
-            if (mRoot == null) return;
-            var elementLeft = new VisualElement()
+            if (toolbars.Length == 0)
+                return;
+
+            _toolbar =
+                toolbars[0] as ScriptableObject;
+
+            if (_toolbar == null)
+                return;
+
+            CreateToolbar();
+        }
+
+        private static void CreateToolbar()
+        {
+            var rootField =
+                _toolbar.GetType()
+                    .GetField(
+                        "m_Root",
+                        BindingFlags.NonPublic |
+                        BindingFlags.Instance);
+
+            var root =
+                rootField?.GetValue(_toolbar)
+                as VisualElement;
+
+            if (root == null)
+                return;
+
+            if (_styleSheet != null)
             {
-                style =
-                {
-                    flexGrow = 1,
-                    flexDirection = FlexDirection.Row,
-                    // width = Length.Percent(100),
-                    justifyContent = Justify.FlexEnd
-                },
-                name = "Custom Left"
-            };
-            var elementRight = new VisualElement()
-            {
-                style =
-                {
-                    flexGrow = 1,
-                    flexDirection = FlexDirection.Row,
-                    // width = Length.Percent(100),
-                    justifyContent = Justify.FlexStart
-                },
-                name = "Custom Right"
-            };
+                root.styleSheets.Add(
+                    _styleSheet);
+            }
 
-            var toolbarLeft = mRoot.Q("ToolbarZoneLeftAlign");
-            toolbarLeft.Add(elementLeft);
-            var toolbarRight = mRoot.Q("ToolbarZoneRightAlign");
-            toolbarRight.Add(elementRight);
+            var left =
+                new VisualElement();
 
-            foreach (var ui in _drawUI)
+            left.name =
+                "CustomToolbarLeft";
+
+            left.AddToClassList(
+                "custom-toolbar-overflow");
+
+            left.style.flexDirection =
+                FlexDirection.Row;
+
+            var right =
+                new VisualElement();
+
+            right.name =
+                "CustomToolbarRight";
+
+            right.AddToClassList(
+                "custom-toolbar-overflow");
+
+            right.style.flexDirection =
+                FlexDirection.Row;
+
+            right.style.justifyContent =
+                Justify.FlexEnd;
+
+            left.style.justifyContent =
+                Justify.FlexStart;
+
+            var leftZone =
+                root.Q(
+                    "ToolbarZoneLeftAlign");
+
+            var rightZone =
+                root.Q(
+                    "ToolbarZoneRightAlign");
+
+            if (leftZone == null ||
+                rightZone == null)
+                return;
+
+            leftZone.Add(left);
+
+            rightZone.Add(right);
+
+            foreach (var item in DrawUI)
             {
-                if (ui.Location == ToolbarLocation.Right)
+                var element =
+                    item.Factory();
+
+                if (item.Location ==
+                   ToolbarLocation.Left)
                 {
-                    elementRight.Add(ui.UI);
+                    left.Add(element);
                 }
                 else
                 {
-                    elementLeft.Add(ui.UI);
+                    right.Add(element);
                 }
             }
         }

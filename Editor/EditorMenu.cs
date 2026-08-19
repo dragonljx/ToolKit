@@ -4,7 +4,7 @@ using UnityEditor;
 using UnityEditor.PackageManager;
 using UnityEngine;
 
-namespace ToolKitsEditor
+namespace ToolKit.Editor
 {
     public static class EditorMenu
     {

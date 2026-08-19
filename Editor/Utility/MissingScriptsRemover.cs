@@ -4,7 +4,7 @@ using ToolKit;
 using UnityEditor;
 using UnityEngine;
 
-namespace ToolKitsEditor
+namespace ToolKit.Editor
 {
     public static class FindMissingScriptsRecursively
     {

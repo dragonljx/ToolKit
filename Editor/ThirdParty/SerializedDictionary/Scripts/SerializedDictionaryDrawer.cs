@@ -20,6 +20,7 @@ namespace ToolKit.SerializedDictionary.Editor
         public const bool ValueFlag = false;
         public static readonly Color BorderColor = new Color(36 / 255f, 36 / 255f, 36 / 255f);
         public static readonly List<int> NoEntriesList = new List<int>();
+
         internal static GUIContent DisplayTypeToggleContent
         {
             get
@@ -32,6 +33,7 @@ namespace ToolKit.SerializedDictionary.Editor
                 return _displayTypeToggleContent;
             }
         }
+
         private static GUIContent _displayTypeToggleContent;
 
         private Dictionary<string, SerializedDictionaryInstanceDrawer> _arrayData = new();
