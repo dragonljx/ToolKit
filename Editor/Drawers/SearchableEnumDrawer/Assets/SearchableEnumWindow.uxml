@@ -1,0 +1,7 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" xsi="http://www.w3.org/2001/XMLSchema-instance" engine="UnityEngine.UIElements" editor="UnityEditor.UIElements" noNamespaceSchemaLocation="../../../../../../UIElementsSchema/UIElements.xsd" editor-extension-mode="True">
+    <ui:VisualElement style="height: auto; border-left-width: 1px; border-right-width: 1px; border-top-width: 1px; border-bottom-width: 1px; border-left-color: rgba(128, 128, 128, 0.4); border-right-color: rgba(128, 128, 128, 0.4); border-top-color: rgba(128, 128, 128, 0.4); border-bottom-color: rgba(128, 128, 128, 0.4); border-top-left-radius: 2px; border-bottom-left-radius: 2px; border-top-right-radius: 2px; border-bottom-right-radius: 2px; flex-grow: 1;">
+        <uie:ToolbarSearchField focusable="true" name="enumSearchField" style="width: auto; margin-top: 5px;" />
+        <ui:VisualElement style="height: 1px; background-color: rgba(0, 0, 0, 0.5); flex-grow: 0; min-height: 1px; max-height: 1px; margin-top: 2px; margin-bottom: 2px;" />
+        <ui:ListView focusable="true" name="enumListView" virtualization-method="FixedHeight" show-border="false" style="margin-left: 4px; margin-right: 4px; margin-top: 4px; margin-bottom: 4px;" />
+    </ui:VisualElement>
+</ui:UXML>

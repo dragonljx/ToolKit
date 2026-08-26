@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using UnityEngine;
@@ -63,45 +63,6 @@ namespace ToolKit
             }
             return false;
         }
-
-        #region Debug 扩展
-
-        public static void DebugLoop<K, V>(this IDictionary<K, V> dic)
-        {
-            foreach (var item in dic)
-            {
-                DLogger.Log($"Key: {item.Key}  Value: {item.Value}");
-            }
-        }
-
-        public static void DebugLoop<T>(this IEnumerable<T> strList)
-        {
-            foreach (var item in strList)
-            {
-                DLogger.Log(item);
-            }
-        }
-
-        public static void DebugLoop<T>(this IEnumerable<T> strList, Func<T, string> customCall = null)
-        {
-            if (customCall != null)
-            {
-                foreach (var item in strList)
-                {
-                    string str = customCall.Invoke(item);
-                    DLogger.Log(str);
-                }
-            }
-            else
-            {
-                foreach (var item in strList)
-                {
-                    DLogger.Log(item);
-                }
-            }
-        }
-
-        #endregion Debug 扩展
 
         #region 数组随机
 

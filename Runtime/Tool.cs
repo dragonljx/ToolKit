@@ -1,161 +1,265 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
+using System.Text;
 
 namespace ToolKit
 {
+    /// <summary>
+    /// 通用工具类
+    /// </summary>
     public static class Tool
     {
-        public static string Cmd(string arguments)
+        #region Process
+
+        /// <summary>
+        /// 执行命令行并获取输出结果。
+        /// 默认通过 cmd.exe 执行。
+        /// </summary>
+        /// <param name="command">执行命令</param>
+        /// <returns>标准输出内容</returns>
+        public static string ExecuteCommand(string command)
         {
             try
             {
-                using (Process process = new Process())
+                using Process process = new Process();
+
+                process.StartInfo.FileName = "cmd.exe";
+                process.StartInfo.Arguments = $"/c {command}";
+                process.StartInfo.UseShellExecute = false;
+                process.StartInfo.CreateNoWindow = true;
+
+                process.StartInfo.RedirectStandardOutput = true;
+                process.StartInfo.RedirectStandardError = true;
+
+                process.StartInfo.StandardOutputEncoding = Encoding.UTF8;
+                process.StartInfo.StandardErrorEncoding = Encoding.UTF8;
+
+                process.Start();
+
+                string output = process.StandardOutput.ReadToEnd();
+                string error = process.StandardError.ReadToEnd();
+
+                process.WaitForExit();
+
+                if (process.ExitCode != 0 && !string.IsNullOrEmpty(error))
                 {
-                    process.StartInfo.FileName = "cmd.exe";
-                    process.StartInfo.Arguments = arguments;
-                    process.StartInfo.UseShellExecute = false;    //是否使用操作系统shell启动
-                    process.StartInfo.RedirectStandardInput = true;//接受来自调用程序的输入信息
-                    process.StartInfo.RedirectStandardOutput = true;//由调用程序获取输出信息
-                    process.StartInfo.RedirectStandardError = true;//重定向标准错误输出
-                    process.StartInfo.CreateNoWindow = true;//不显示程序窗口
-
-                    process.Start();//启动程序
-
-                    return process.StandardOutput.ReadToEnd();
+                    UnityEngine.Debug.LogError(error);
                 }
+
+                return output;
             }
-            catch (System.Exception e)
+            catch (Exception e)
             {
                 UnityEngine.Debug.LogError(e);
+                return string.Empty;
             }
-            return "";
         }
 
-        public static void RunProcess(string command, string arguments)
+
+        /// <summary>
+        /// 启动外部程序。
+        /// 支持实时输出日志。
+        /// </summary>
+        /// <param name="fileName">程序名称</param>
+        /// <param name="arguments">启动参数</param>
+        public static void StartProcess(string fileName, string arguments)
         {
             try
             {
-                using (Process process = new Process())
+                using Process process = new Process();
+
+                process.StartInfo.FileName = fileName;
+                process.StartInfo.Arguments = arguments;
+
+                process.StartInfo.UseShellExecute = false;
+                process.StartInfo.CreateNoWindow = true;
+
+                process.StartInfo.RedirectStandardInput = true;
+                process.StartInfo.RedirectStandardOutput = true;
+                process.StartInfo.RedirectStandardError = true;
+
+                process.StartInfo.StandardOutputEncoding = Encoding.UTF8;
+                process.StartInfo.StandardErrorEncoding = Encoding.UTF8;
+
+                process.OutputDataReceived += (_, e) =>
                 {
-                    process.StartInfo.StandardErrorEncoding = System.Text.Encoding.UTF8;
-                    process.StartInfo.StandardOutputEncoding = System.Text.Encoding.UTF8;
-                    process.StartInfo.StandardInputEncoding = System.Text.Encoding.UTF8;
-                    process.StartInfo.FileName = command;
-                    process.StartInfo.Arguments = arguments;
-                    process.StartInfo.UseShellExecute = false;    //是否使用操作系统shell启动
-                    process.StartInfo.RedirectStandardInput = true;//接受来自调用程序的输入信息
-                    process.StartInfo.RedirectStandardOutput = true;//由调用程序获取输出信息
-                    process.StartInfo.RedirectStandardError = true;//重定向标准错误输出
-                    process.StartInfo.CreateNoWindow = true;//不显示程序窗口
-                    process.OutputDataReceived += (sender, str) =>
+                    if (!string.IsNullOrEmpty(e.Data))
                     {
-                        if (!string.IsNullOrEmpty(str.Data))
-                        {
-                            UnityEngine.Debug.Log(str.Data);
-                        }
-                    };
-                    process.Exited += (sender, e) => UnityEngine.Debug.LogError(e.ToString());
-                    process.Start();//启动程序
-                    process.BeginOutputReadLine();
-                    process.WaitForExit();
+                        UnityEngine.Debug.Log(e.Data);
+                    }
+                };
+
+                process.ErrorDataReceived += (_, e) =>
+                {
+                    if (!string.IsNullOrEmpty(e.Data))
+                    {
+                        UnityEngine.Debug.LogError(e.Data);
+                    }
+                };
+
+                process.Start();
+
+                process.BeginOutputReadLine();
+                process.BeginErrorReadLine();
+
+                process.WaitForExit();
+
+                if (process.ExitCode != 0)
+                {
+                    UnityEngine.Debug.LogError(
+                        $"Process exited with code:{process.ExitCode}");
                 }
             }
-            catch (System.Exception e)
+            catch (Exception e)
             {
                 UnityEngine.Debug.LogError(e);
             }
         }
 
+        #endregion
+
+
+        #region Byte
+
+        /// <summary>
+        /// 比较两个 byte 数组内容是否完全一致。
+        /// 使用 unsafe 指针方式提高大量数据比较性能。
+        /// </summary>
+        /// <param name="x">数组1</param>
+        /// <param name="y">数组2</param>
+        /// <returns>是否相同</returns>
         public static unsafe bool CompareBytes(byte[] x, byte[] y)
         {
-            if (ReferenceEquals(x, y)) return true;
-            if (x is null || y is null) return false;
-            if (x.Length != y.Length) return false;
-
-            fixed (byte* xPtr = x, yPtr = y)
+            if (ReferenceEquals(x, y))
             {
-                return UlongCompareInternal(xPtr, yPtr, x.Length);
+                return true;
+            }
+
+            if (x == null || y == null)
+            {
+                return false;
+            }
+
+            if (x.Length != y.Length)
+            {
+                return false;
+            }
+
+            fixed (byte* xPtr = x)
+            fixed (byte* yPtr = y)
+            {
+                return CompareBytesInternal(xPtr, yPtr, x.Length);
             }
         }
 
-        private static unsafe bool UlongCompareInternal(byte* xPtr, byte* yPtr, int length)
-        {
-            // 指针+偏移量计算出数组最后一个元素地址
-            byte* lastAddr = xPtr + length;
-            byte* lastAddrMinus32 = lastAddr - 32;
-            while (xPtr < lastAddrMinus32) // 我们一次循环比较32字节，也就是256位
+
+        /// <summary>
+        /// 内部字节比较实现。
+        /// 每次比较 32 字节，提高 CPU 缓存利用率。
+        /// </summary>
+        private static unsafe bool CompareBytesInternal( byte* xPtr, byte* yPtr, int length) {
+            byte* end = xPtr + length;
+
+            while (xPtr + 32 <= end)
             {
-                // 一次判断比较前64位
-                if (*(ulong*)xPtr != *(ulong*)yPtr) return false;
-                // 第二次从64为开始，比较接下来的64位，需要指针偏移64位，一个byte指针是8为，所以需要偏移8个位置才能到下一轮起始位置
-                // 所以代码就是xPtr+8
-                if (*(ulong*)(xPtr + 8) != *(ulong*)(yPtr + 8)) return false;
-                // 同上面一样，第三次从第128位开始比较64位
-                if (*(ulong*)(xPtr + 16) != *(ulong*)(yPtr + 16)) return false;
-                // 第四次从第192位开始比较64位
-                if (*(ulong*)(xPtr + 24) != *(ulong*)(yPtr + 24)) return false;
-                // 一轮总共比较了256位，让指针偏移256位
+                if (*(ulong*)xPtr != *(ulong*)yPtr)
+                    return false;
+
+                if (*(ulong*)(xPtr + 8) != *(ulong*)(yPtr + 8))
+                    return false;
+
+                if (*(ulong*)(xPtr + 16) != *(ulong*)(yPtr + 16))
+                    return false;
+
+                if (*(ulong*)(xPtr + 24) != *(ulong*)(yPtr + 24))
+                    return false;
+
                 xPtr += 32;
                 yPtr += 32;
             }
-            // 因为上面是一次性比较32字节(256位)，可能数组不能为32整除，最后只留下比如30字节，20字节
-            // 最后的几个字节，我们用循环来逐字节比较
-            while (xPtr < lastAddr)
+
+            while (xPtr < end)
             {
-                if (*xPtr != *yPtr) return false;
+                if (*xPtr != *yPtr)
+                    return false;
+
                 xPtr++;
                 yPtr++;
             }
+
             return true;
         }
 
-        /// <summary>
-        /// 获取顺序缺失数字
-        /// </summary>
-        /// <param name="data"></param>
-        /// <param name="rangeStart"></param>
-        /// <param name="rangeEnd"></param>
-        public static int[] GetSequentialMissings(List<int> data, int rangeStart, int rangeEnd)
-        {
-            return GetSequentialMissingsCore(data, rangeStart, rangeEnd);
-        }
+        #endregion
+
+
+        #region Collection
 
         /// <summary>
-        /// 获取顺序缺失数字
+        /// 获取指定数字范围内缺失的数字。
         /// </summary>
-        /// <param name="data"></param>
-        /// <param name="rangeStart"></param>
-        /// <param name="rangeEnd"></param>
-        public static int[] GetSequentialMissings(int[] data, int rangeStart, int rangeEnd)
-        {
-            return GetSequentialMissingsCore(data, rangeStart, rangeEnd);
+        /// <param name="data">已有数字集合</param>
+        /// <param name="rangeStart">开始范围</param>
+        /// <param name="rangeEnd">结束范围</param>
+        /// <returns>缺失数字数组</returns>
+        public static int[] GetMissingNumbersInRange( List<int> data, int rangeStart, int rangeEnd) {
+            return GetMissingNumbersInRangeCore(
+                data,
+                rangeStart,
+                rangeEnd);
         }
 
-        private static int[] GetSequentialMissingsCore(IEnumerable<int> data, int rangeStart, int rangeEnd)
+
+        /// <summary>
+        /// 获取指定数字范围内缺失的数字。
+        /// </summary>
+        public static int[] GetMissingNumbersInRange(
+            int[] data,
+            int rangeStart,
+            int rangeEnd)
         {
+            return GetMissingNumbersInRangeCore(
+                data,
+                rangeStart,
+                rangeEnd);
+        }
+
+
+        /// <summary>
+        /// 获取缺失数字核心实现。
+        /// </summary>
+        private static int[] GetMissingNumbersInRangeCore( IEnumerable<int> data, int rangeStart, int rangeEnd) {
             if (rangeEnd < rangeStart)
             {
-                DLogger.LogError($"参数范围错误：rangeStart({rangeStart}) > rangeEnd({rangeEnd})");
-                return System.Array.Empty<int>();
+                throw new ArgumentException(
+                    "rangeEnd cannot be smaller than rangeStart.");
             }
 
-            if (data == null)
-            {
-                data = System.Array.Empty<int>();
-            }
+            HashSet<int> numberSet =
+                data == null
+                ? new HashSet<int>()
+                : new HashSet<int>(data);
 
-            HashSet<int> numbers = new HashSet<int>(data);
+
             List<int> missing = new List<int>();
 
-            for (int i = rangeStart; i <= rangeEnd; i++)
+            for (int i = rangeStart; ; i++)
             {
-                if (!numbers.Contains(i))
+                if (!numberSet.Contains(i))
                 {
                     missing.Add(i);
+                }
+
+                if (i == rangeEnd)
+                {
+                    break;
                 }
             }
 
             return missing.ToArray();
         }
+
+        #endregion
     }
 }

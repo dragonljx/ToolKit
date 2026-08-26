@@ -1,4 +1,4 @@
-using System.IO;
+﻿using System.IO;
 using System.Text;
 using UnityEditor;
 using UnityEditor.UIElements;
@@ -149,7 +149,7 @@ namespace ToolKit.Editor
             json = json.Replace(EmailTag, EmailText);
             json = json.Replace(UrlTag, UrlText);
 
-            ToolFile.WriteFile(Path.Combine(packageFolderPath, packageName), json);
+            ToolFile.SaveJson(Path.Combine(packageFolderPath, packageName), json);
 
             // runtime asmdef
             string runtimeFolderName = $"{CompressStr(CompanyNameText)}.{CompressStr(PackageNameText)}.{RuntimeText}";
@@ -159,7 +159,7 @@ namespace ToolKit.Editor
             builder.AppendLine($"\"rootNamespace\": \"{PackageNameText}\"");
             builder.AppendLine("}");
 
-            ToolFile.WriteFile(Path.Combine(runtimePath, $"{runtimeFolderName}{AsmdefSuffix}"), builder.ToString());
+            ToolFile.SaveJson(Path.Combine(runtimePath, $"{runtimeFolderName}{AsmdefSuffix}"), builder.ToString());
 
             // editor asmdef
             string editorFolderName = $"{CompressStr(CompanyNameText)}.{CompressStr(PackageNameText)}.{EditorText}";
@@ -170,7 +170,7 @@ namespace ToolKit.Editor
             builder.AppendLine($"\"rootNamespace\": \"{PackageNameText}\"");
             builder.AppendLine("}");
 
-            ToolFile.WriteFile(Path.Combine(editorPath, $"{editorFolderName}{AsmdefSuffix}"), builder.ToString());
+            ToolFile.SaveJson(Path.Combine(editorPath, $"{editorFolderName}{AsmdefSuffix}"), builder.ToString());
 
             //EditorCoroutineUtility.StartCoroutine(AddPackage(packageFolderPath), this);
             AddPackage(packageFolderPath);

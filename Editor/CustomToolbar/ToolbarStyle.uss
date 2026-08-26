@@ -1,4 +1,4 @@
-/* 防止 Toolbar 子元素裁剪 */
+﻿/* 防止 Toolbar 子元素裁剪 */
 .custom-toolbar-overflow {
     overflow: visible;
 }
@@ -26,6 +26,8 @@
     height: 22px;
     min-height: 22px;
     max-height: 22px;
+    -unity-font-definition: resource("Packages/com.dragon.toolkit/Editor/Resources/Fonts/MiSans-Medium.ttf");
+
 }
 
 

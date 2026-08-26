@@ -1,24 +1,68 @@
-// Each #kernel tells which function to compile; you can have many kernels
-#pragma kernel CSMain
+﻿#pragma kernel CSMain
 
-// Create a RenderTexture with enableRandomWrite flag and set it
-// with cs.SetTexture
- 
-Texture2D  FrontBuffer; 
-Texture2D  BackBuffer;
+
+Texture2D<float4> FrontBuffer;
+Texture2D<float4> BackBuffer;
 
 RWTexture2D<float4> Result;
-// [0] width [1] height [2] offsetX [3] offsetY
 
-uint heightB; 
-uint heightF;
-uint offsetX; 
-uint offsetY;
 
-[numthreads(8,8,1)]
-void CSMain (uint3 id : SV_DispatchThreadID)
+uint width;
+uint height;
+
+int offsetX;
+int offsetY;
+
+
+[numthreads(8, 8, 1)]
+void CSMain(uint3 id : SV_DispatchThreadID)
 {
-    float stepvalue = step(BackBuffer[id.xy].a, 0.0f);
-    int2 temp = int2(id.x- offsetX, id.y + (offsetY - heightB) + heightF);
-    Result[id.xy] = lerp(BackBuffer[id.xy], FrontBuffer[temp.xy], stepvalue);
+    if (id.x >= width || id.y >= height)
+    {
+        return;
+    }
+
+
+    int2 backPos = int2(id.xy);
+
+
+    float4 backColor = BackBuffer[backPos];
+
+
+    int frontWidth;
+    int frontHeight;
+
+    FrontBuffer.GetDimensions(
+        frontWidth,
+        frontHeight
+    );
+
+
+    int2 frontPos = int2(
+        id.x - offsetX,
+        id.y - offsetY
+    );
+
+
+    float4 result = backColor;
+
+
+    if (frontPos.x >= 0 &&
+        frontPos.y >= 0 &&
+        frontPos.x < frontWidth &&
+        frontPos.y < frontHeight)
+    {
+        float4 frontColor =
+            FrontBuffer[frontPos];
+
+
+        result = lerp(
+            backColor,
+            frontColor,
+            frontColor.a
+        );
+    }
+
+
+    Result[backPos] = result;
 }

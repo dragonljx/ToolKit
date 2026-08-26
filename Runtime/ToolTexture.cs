@@ -1,166 +1,239 @@
-using System;
+﻿using System;
 using System.Collections;
 using UnityEngine;
 
 namespace ToolKit
 {
-
-    public class ToolTexture
+    /// <summary>
+    /// Texture工具类
+    /// 提供截图、纹理合并、缩放、裁剪、释放等功能
+    /// </summary>
+    public static class ToolTexture
     {
+        #region 屏幕截图
+
 #if SCREEN_CAPTURE
-        public static IEnumerator Capture(Action<Texture2D> callback, Rect rect = new Rect())
+        /// <summary>
+        /// 截取屏幕
+        /// </summary>
+        /// <param name="callback">截图完成回调，返回Texture2D</param>
+        /// <param name="rect">裁剪区域，默认截取全屏</param>
+        public static IEnumerator Capture(Action<Texture2D> callback, Rect rect = default)
         {
             yield return new WaitForEndOfFrame();
-            Texture2D view = ScreenCapture.CaptureScreenshotAsTexture();
-            if (rect.width != 0 || rect.height != 0)
+
+            Texture2D screenTexture = ScreenCapture.CaptureScreenshotAsTexture();
+
+            if (rect.width > 0 && rect.height > 0)
             {
-                Texture2D result = ToolTexture.CropTexture(view, rect);
-                callback(result);
-                GameObject.Destroy(result);
+                Texture2D cropped = CropTexture(screenTexture, rect);
+                Release(screenTexture);
+                callback?.Invoke(cropped);
             }
             else
             {
-                callback(view);
+                callback?.Invoke(screenTexture);
             }
-            GameObject.Destroy(view);
         }
 #endif
 
+        #endregion
+
+        #region 纹理合并
+
         /// <summary>
-        /// 两张图合并，同时裁剪前图
+        /// 合并两张纹理（直接拷贝覆盖）
+        /// 将front的指定区域拷贝到back的指定位置
         /// </summary>
-        /// <param name="back"></param>
-        /// <param name="backOffsetX">前图在后图上的偏移X</param>
-        /// <param name="backOffsetY">前图在后图上的偏移Y</param>
-        /// <param name="front"></param>
-        /// <param name="frontOffsetX">前图使用内容的X偏移</param>
-        /// <param name="frontOffsetY">前图使用内容的Y偏移</param>
-        /// <param name="frontWidth">前图使用的宽</param>
-        /// <param name="frontHeight">前图使用的高</param>
-        /// <returns></returns>
-        public static Texture2D MergeTexture(Texture2D back, int backOffsetX, int backOffsetY, Texture2D front, int frontOffsetX, int frontOffsetY, int frontWidth, int frontHeight)
+        public static Texture2D MergeTexture(
+            Texture2D back,
+            int backOffsetX,
+            int backOffsetY,
+            Texture2D front,
+            int frontSourceX,
+            int frontSourceY,
+            int frontWidth,
+            int frontHeight)
         {
-            Texture2D texture = new Texture2D(back.width, back.height, TextureFormat.RGBA32, false);
+            ValidateTexture(back);
+            ValidateTexture(front);
 
-            Graphics.CopyTexture(back, 0, texture, 0);
-            Graphics.CopyTexture(front, 0, 0, frontOffsetX, frontOffsetY, frontWidth, frontHeight,
-                texture, 0, 0, backOffsetX, backOffsetY);
+            Texture2D result = new Texture2D(back.width, back.height, TextureFormat.RGBA32, false);
+            Graphics.CopyTexture(back, result);
 
-            return texture;
+            Graphics.CopyTexture(
+                front, 0, 0, frontSourceX, frontSourceY, frontWidth, frontHeight,
+                result, 0, 0, backOffsetX, backOffsetY);
+
+            return result;
         }
 
         /// <summary>
-        /// 两张图合并，同时裁剪前图
+        /// 使用ComputeShader进行Alpha混合合并
         /// </summary>
-        /// <param name="back"></param>
-        /// <param name="backOffsetX">前图在后图上的偏移X</param>
-        /// <param name="backOffsetY">前图在后图上的偏移Y</param>
-        /// <param name="front"></param>
-        /// <param name="frontOffsetX">前图使用内容的X偏移</param>
-        /// <param name="frontOffsetY">前图使用内容的Y偏移</param>
-        /// <param name="frontWidth">前图使用的宽</param>
-        /// <param name="frontHeight">前图使用的高</param>
-        /// <returns></returns>
-        public static Texture2D MergeTextureAlpha(Texture2D back, Texture2D front, int backOffsetX, int backOffsetY)
+        public static Texture2D MergeTextureAlpha(Texture2D back, Texture2D front, int offsetX, int offsetY)
         {
-            ComputeShader shader = Resources.Load<ComputeShader>("ComputeShader/AddTestureCS");
-            //ComputeShader shader = AssetDatabase.LoadAssetAtPath<ComputeShader>("Packages/dragon.tools/Runtime/ComputeShader/AddTestureCS.compute");
-            RenderTexture renderTex = new RenderTexture(back.width, back.height, 32);
-            Texture2D texture = new Texture2D(back.width, back.height, TextureFormat.RGBA32, false);
+            ValidateTexture(back);
+            ValidateTexture(front);
+            RenderTextureDescriptor desc = new RenderTextureDescriptor(
+                back.width, back.height, RenderTextureFormat.ARGB32);
 
-            int kernelHandle = shader.FindKernel("CSMain");
-            renderTex.enableRandomWrite = true;
-            renderTex.Create();
+            desc.enableRandomWrite = true;
+            RenderTexture renderTexture = new RenderTexture(desc);
+            renderTexture.Create();
 
-            // [0] width [1] height [2] offsetX [3] offsetY
-            shader.SetInt("heightB", back.height);
-            shader.SetInt("heightF", front.height);
-            shader.SetInt("offsetX", backOffsetX);
-            shader.SetInt("offsetY", backOffsetY);
-
-            shader.SetTexture(kernelHandle, "Result", renderTex);
-            shader.SetTexture(kernelHandle, "FrontBuffer", front);
-            shader.SetTexture(kernelHandle, "BackBuffer", back);
-            shader.Dispatch(kernelHandle, back.width / 8, back.height / 8, 1);
-
-
-            RenderTexture.active = renderTex;
-            texture.ReadPixels(new Rect(0, 0, renderTex.width, renderTex.height), 0, 0);
-            texture.Apply();
-            RenderTexture.active = null;
-
-            return texture;
+            Texture2D result = new Texture2D(
+                back.width, back.height, TextureFormat.RGBA32, false);
+            try
+            {
+                ComputeShader shader = AddTextureShader;
+                int kernel = shader.FindKernel("CSMain");
+                shader.SetInt("width", back.width);
+                shader.SetInt("height", back.height);
+                shader.SetInt("frontWidth", front.width);
+                shader.SetInt("frontHeight", front.height);
+                shader.SetInt("offsetX", offsetX);
+                shader.SetInt("offsetY", offsetY);
+                shader.SetTexture(kernel, "Result", renderTexture);
+                shader.SetTexture(kernel, "FrontBuffer", front);
+                shader.SetTexture(kernel, "BackBuffer", back);
+                shader.Dispatch(kernel, Mathf.CeilToInt(back.width / 8f), Mathf.CeilToInt(back.height / 8f), 1);
+                RenderTexture old = RenderTexture.active;
+                try
+                {
+                    RenderTexture.active = renderTexture;
+                    result.ReadPixels(new Rect(0, 0, back.width, back.height), 0, 0);
+                    result.Apply();
+                }
+                finally
+                {
+                    RenderTexture.active = old;
+                }
+            }
+            finally
+            {
+                renderTexture.Release();
+                UnityEngine.Object.Destroy(renderTexture);
+            }
+            return result;
         }
+        #endregion
+
+        #region 纹理变换
+
         /// <summary>
-        /// 缩放Textur2D
+        /// 缩放纹理
         /// </summary>
-        /// <param name="source"></param>
-        /// <param name="newWidth"></param>
-        /// <param name="newHeight"></param>
-        /// <returns></returns>
-        public static Texture2D ResizeTexture(Texture2D source, int newWidth, int newHeight)
+        public static Texture2D ResizeTexture(Texture2D source, int width, int height)
         {
-            source.filterMode = FilterMode.Point;
-            RenderTexture rt = RenderTexture.GetTemporary(newWidth, newHeight);
-            rt.filterMode = FilterMode.Point;
-            RenderTexture.active = rt;
-            Graphics.Blit(source, rt);
-            var nTex = new Texture2D(newWidth, newHeight, TextureFormat.RGBA32, false);
-            nTex.ReadPixels(new Rect(0, 0, newWidth, newHeight), 0, 0);
-            nTex.Apply();
-            RenderTexture.active = null;
-            return nTex;
+            ValidateTexture(source);
 
+            RenderTexture rt = RenderTexture.GetTemporary(width, height);
+
+            try
+            {
+                rt.filterMode = FilterMode.Point;
+                Graphics.Blit(source, rt);
+
+                Texture2D result = new Texture2D(width, height, TextureFormat.RGBA32, false);
+
+                RenderTexture previous = RenderTexture.active;
+                RenderTexture.active = rt;
+
+                result.ReadPixels(new Rect(0, 0, width, height), 0, 0);
+                result.Apply();
+
+                RenderTexture.active = previous;
+
+                return result;
+            }
+            finally
+            {
+                RenderTexture.ReleaseTemporary(rt);
+            }
         }
+
         /// <summary>
-        /// 裁剪 Texture2D
+        /// 裁剪纹理（坐标参数重载）
         /// </summary>
-        /// <param name="source"></param>
-        /// <param name="offsetX"></param>
-        /// <param name="offsetY"></param>
-        /// <param name="newWidth"></param>
-        /// <param name="newHeight"></param>
-        /// <returns></returns>
-        public static Texture2D CropTexture(Texture2D source, float offsetX, float offsetY, float newWidth, float newHeight)
+        public static Texture2D CropTexture(Texture2D source, float x, float y, float width, float height)
         {
-            source.filterMode = FilterMode.Point;
-            RenderTexture rt = RenderTexture.GetTemporary(source.width, source.height);
-            rt.filterMode = FilterMode.Point;
-            RenderTexture.active = rt;
-            Graphics.Blit(source, rt);
-            var nTex = new Texture2D((int)newWidth, (int)newHeight, TextureFormat.RGB24, false);
-            nTex.ReadPixels(new Rect(offsetX, offsetY, newWidth, newHeight), 0, 0);
-            nTex.Apply();
-            RenderTexture.active = null;
-            return nTex;
+            return CropTexture(source, new Rect(x, y, width, height));
         }
+
         /// <summary>
-        /// 裁剪 Texture2D
+        /// 裁剪纹理
         /// </summary>
-        /// <param name="source"></param>
-        /// <param name="offsetX"></param>
-        /// <param name="offsetY"></param>
-        /// <param name="newWidth"></param>
-        /// <param name="newHeight"></param>
-        /// <returns></returns>
         public static Texture2D CropTexture(Texture2D source, Rect rect)
         {
-            source.filterMode = FilterMode.Point;
-            RenderTexture rt = RenderTexture.GetTemporary(source.width, source.height, 24,
-                RenderTextureFormat.ARGB32, RenderTextureReadWrite.Linear);
-            rt.filterMode = FilterMode.Point;
-            Graphics.Blit(source, rt);
+            ValidateTexture(source);
 
-            var nTex = new Texture2D((int)rect.width, (int)rect.height, source.format, false);
-            RenderTexture.active = rt;
-            nTex.ReadPixels(rect, 0, 0);
-            nTex.Apply();
+            RenderTexture rt = RenderTexture.GetTemporary(
+                source.width, source.height, 24, RenderTextureFormat.ARGB32, RenderTextureReadWrite.Linear);
 
-            RenderTexture.active = null;
-            RenderTexture.ReleaseTemporary(rt);
+            try
+            {
+                Graphics.Blit(source, rt);
 
-            return nTex;
+                Texture2D result = new Texture2D((int)rect.width, (int)rect.height, TextureFormat.RGBA32, false);
+
+                RenderTexture previous = RenderTexture.active;
+                RenderTexture.active = rt;
+
+                result.ReadPixels(rect, 0, 0);
+                result.Apply();
+
+                RenderTexture.active = previous;
+
+                return result;
+            }
+            finally
+            {
+                RenderTexture.ReleaseTemporary(rt);
+            }
         }
 
+        #endregion
+
+        #region 资源管理
+
+        /// <summary>
+        /// 释放纹理资源
+        /// </summary>
+        public static void Release(Texture texture)
+        {
+            if (texture != null)
+            {
+                UnityEngine.Object.Destroy(texture);
+            }
+        }
+
+        #endregion
+
+        #region 内部工具
+
+        private static ComputeShader _addTextureShader;
+
+        private static ComputeShader AddTextureShader
+        {
+            get
+            {
+                if (_addTextureShader == null)
+                {
+                    _addTextureShader = Resources.Load<ComputeShader>("ComputeShader/AddTestureCS");
+                }
+                return _addTextureShader;
+            }
+        }
+
+        private static void ValidateTexture(Texture2D texture)
+        {
+            if (texture == null)
+            {
+                throw new ArgumentNullException(nameof(texture), "纹理不能为空");
+            }
+        }
+
+        #endregion
     }
 }

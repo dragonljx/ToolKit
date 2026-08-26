@@ -1,6 +1,6 @@
-#if !UNITY_2022_2_OR_NEWER
-// Unity 2022.2 ¼°ÒÔÉÏ°æ±¾ÇëÖ±½ÓÔÚ DLogger µÄ·½·¨ÉÏÊ¹ÓÃ [HideInCallstack] ÌØĞÔ,
-// Ô­ÉúÖ§³ÖË«»÷Ìø×ªµ½ÕæÕıµ÷ÓÃÕß,²»ÔÙĞèÒªÕâÌ×·´Éä·½°¸¡£
+ï»¿#if !UNITY_2022_2_OR_NEWER
+// Unity 2022.2 åŠä»¥ä¸Šç‰ˆæœ¬è¯·ç›´æ¥åœ¨ DLogger çš„æ–¹æ³•ä¸Šä½¿ç”¨ [HideInCallstack] ç‰¹æ€§,
+// åŸç”Ÿæ”¯æŒåŒå‡»è·³è½¬åˆ°çœŸæ­£è°ƒç”¨è€…,ä¸å†éœ€è¦è¿™å¥—åå°„æ–¹æ¡ˆã€‚
 using System;
 using System.Reflection;
 using UnityEditor;
@@ -8,15 +8,15 @@ using UnityEditor;
 namespace ToolKit.Editor
 {
     /// <summary>
-    /// Ë«»÷ Console Ãæ°åÖĞÓÉ DLogger ´òÓ¡µÄÈÕÖ¾Ê±,×Ô¶¯Ìø×ªµ½ÕæÕıµÄµ÷ÓÃÕß´úÂëĞĞ,
-    /// ¶ø²»ÊÇÌø×ªµ½ DLogger.cs ÄÚ²¿¡£
-    /// Ô­Àí:À¹½Ø OnOpenAsset »Øµ÷,·´Éä¶ÁÈ¡ ConsoleWindow µ±Ç°Ñ¡ÖĞÈÕÖ¾µÄÍêÕû¶ÑÕ»ÎÄ±¾,
-    /// ½âÎö³öµÚÒ»¸ö²»ÊôÓÚÈÕÖ¾°ü×°ÎÄ¼şµÄ¶ÑÕ»Ö¡²¢Ìø×ª¡£
-    /// ½öÓÃÓÚ Unity 2022.2 ÒÔÏÂ°æ±¾,ĞÂ°æ±¾Çë¸ÄÓÃ [HideInCallstack] ÌØĞÔ¡£
+    /// åŒå‡» Console é¢æ¿ä¸­ç”± DLogger æ‰“å°çš„æ—¥å¿—æ—¶,è‡ªåŠ¨è·³è½¬åˆ°çœŸæ­£çš„è°ƒç”¨è€…ä»£ç è¡Œ,
+    /// è€Œä¸æ˜¯è·³è½¬åˆ° DLogger.cs å†…éƒ¨ã€‚
+    /// åŸç†:æ‹¦æˆª OnOpenAsset å›è°ƒ,åå°„è¯»å– ConsoleWindow å½“å‰é€‰ä¸­æ—¥å¿—çš„å®Œæ•´å †æ ˆæ–‡æœ¬,
+    /// è§£æå‡ºç¬¬ä¸€ä¸ªä¸å±äºæ—¥å¿—åŒ…è£…æ–‡ä»¶çš„å †æ ˆå¸§å¹¶è·³è½¬ã€‚
+    /// ä»…ç”¨äº Unity 2022.2 ä»¥ä¸‹ç‰ˆæœ¬,æ–°ç‰ˆæœ¬è¯·æ”¹ç”¨ [HideInCallstack] ç‰¹æ€§ã€‚
     /// </summary>
     public static class LogStackJumpFix
     {
-        // ËùÓĞ±»ÊÓÎª"ÈÕÖ¾°ü×°ÎÄ¼ş"µÄÎÄ¼şÃû,Ë«»÷ÕâĞ©ÎÄ¼ş»á³¢ÊÔÌø×ªµ½ÕæÕıµ÷ÓÃÕß
+        // æ‰€æœ‰è¢«è§†ä¸º"æ—¥å¿—åŒ…è£…æ–‡ä»¶"çš„æ–‡ä»¶å,åŒå‡»è¿™äº›æ–‡ä»¶ä¼šå°è¯•è·³è½¬åˆ°çœŸæ­£è°ƒç”¨è€…
         private static readonly string[] LogWrapperFileNames =
         {
             "DLogger.cs",
@@ -49,7 +49,7 @@ namespace ToolKit.Editor
             }
             catch
             {
-                // ·´Éä×Ö¶ÎÔÚµ±Ç° Unity °æ±¾ÏÂÄÃ²»µ½,¾²Ä¬»ØÍË,½»¸øÄ¬ÈÏĞĞÎª
+                // åå°„å­—æ®µåœ¨å½“å‰ Unity ç‰ˆæœ¬ä¸‹æ‹¿ä¸åˆ°,é™é»˜å›é€€,äº¤ç»™é»˜è®¤è¡Œä¸º
                 return false;
             }
 
@@ -71,10 +71,10 @@ namespace ToolKit.Editor
 
             foreach (var fileName in LogWrapperFileNames)
             {
-                // ÓÃÎÄ¼şÃûÆ¥Åä¶ø·ÇÍêÕûÂ·¾¶Æ¥Åä:
-                // AssetDatabase ·µ»ØµÄÊÇ Packages/... ĞéÄâÂ·¾¶,
-                // ¶ø¶ÑÕ»ÎÄ±¾Àï¼ÇÂ¼µÄ¿ÉÄÜÊÇ Library/PackageCache/...@hash/... ÎïÀíÂ·¾¶,
-                // Á½ÕßÇ°×º²»Í¬,Ö»ÓĞÎÄ¼şÃûÊÇÒ»ÖÂµÄ¡£
+                // ç”¨æ–‡ä»¶ååŒ¹é…è€Œéå®Œæ•´è·¯å¾„åŒ¹é…:
+                // AssetDatabase è¿”å›çš„æ˜¯ Packages/... è™šæ‹Ÿè·¯å¾„,
+                // è€Œå †æ ˆæ–‡æœ¬é‡Œè®°å½•çš„å¯èƒ½æ˜¯ Library/PackageCache/...@hash/... ç‰©ç†è·¯å¾„,
+                // ä¸¤è€…å‰ç¼€ä¸åŒ,åªæœ‰æ–‡ä»¶åæ˜¯ä¸€è‡´çš„ã€‚
                 if (assetPath.EndsWith("/" + fileName, StringComparison.OrdinalIgnoreCase)
                     || assetPath.Equals(fileName, StringComparison.OrdinalIgnoreCase))
                     return true;
@@ -105,7 +105,7 @@ namespace ToolKit.Editor
 
                 if (_activeTextField == null || _consoleWindowInstanceField == null)
                 {
-                    // µ±Ç° Unity °æ±¾ÄÚ²¿×Ö¶ÎÃû±äÁË,±ê¼ÇÊ§°Ü,ºóĞø²»ÔÙÖØ¸´³¢ÊÔ
+                    // å½“å‰ Unity ç‰ˆæœ¬å†…éƒ¨å­—æ®µåå˜äº†,æ ‡è®°å¤±è´¥,åç»­ä¸å†é‡å¤å°è¯•
                     _reflectionInitFailed = true;
                     return false;
                 }
@@ -120,8 +120,8 @@ namespace ToolKit.Editor
         }
 
         /// <summary>
-        /// ´Ó¶ÑÕ»ÎÄ±¾ÖĞÌø¹ıËùÓĞÊôÓÚ"ÈÕÖ¾°ü×°ÎÄ¼ş"µÄÖ¡,
-        /// ·µ»ØµÚÒ»¸öÕæÕıµ÷ÓÃÕßËùÔÚµÄÎÄ¼şÂ·¾¶ºÍĞĞºÅ¡£
+        /// ä»å †æ ˆæ–‡æœ¬ä¸­è·³è¿‡æ‰€æœ‰å±äº"æ—¥å¿—åŒ…è£…æ–‡ä»¶"çš„å¸§,
+        /// è¿”å›ç¬¬ä¸€ä¸ªçœŸæ­£è°ƒç”¨è€…æ‰€åœ¨çš„æ–‡ä»¶è·¯å¾„å’Œè¡Œå·ã€‚
         /// </summary>
         private static (string path, int line) GetFirstNonWrapperFrame(string stackStr)
         {
@@ -136,7 +136,7 @@ namespace ToolKit.Editor
 
                 filePathIndex += textBeforeFilePath.Length;
                 if (filePathIndex >= rawLine.Length || rawLine[filePathIndex] == '<')
-                    continue; // ÄÚ²¿Ö¡(ÎŞÔ´ÂëÂ·¾¶),Ìø¹ı
+                    continue; // å†…éƒ¨å¸§(æ— æºç è·¯å¾„),è·³è¿‡
 
                 string filePathPart = rawLine.Substring(filePathIndex);
                 int lineSepIndex = filePathPart.LastIndexOf(":", StringComparison.Ordinal);
@@ -154,7 +154,7 @@ namespace ToolKit.Editor
                     continue;
 
                 if (IsLogWrapperFile(filePath))
-                    continue; // ÊôÓÚÈÕÖ¾°ü×°ÎÄ¼ş±¾Éí,¼ÌĞøÕÒÏÂÒ»Ö¡
+                    continue; // å±äºæ—¥å¿—åŒ…è£…æ–‡ä»¶æœ¬èº«,ç»§ç»­æ‰¾ä¸‹ä¸€å¸§
 
                 return (filePath, lineNumber);
             }
