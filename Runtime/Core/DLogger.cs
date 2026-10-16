@@ -8,6 +8,45 @@ using UnityEngine;
 
 namespace ToolKit
 {
+    /// <summary>
+    /// 带标签、时间戳和对象深度展开的日志封装
+    /// <para>用法：直接调用静态方法即可，无需初始化，首次访问前会自动完成主线程登记</para>
+    /// <para>传入 object 重载时会递归展开对象的字段和属性，而不是只调用 ToString()</para>
+    /// <code>
+    /// // 不带标签
+    /// DLogger.Log("初始化完成");
+    ///
+    /// // 带标签，标签会以橙色 [Tag] 形式显示在消息前面
+    /// DLogger.Log("Game", "初始化完成");
+    /// DLogger.LogWarning("Network", "连接超时");
+    /// DLogger.LogError("Save", "保存失败");
+    ///
+    /// // 传对象：递归展开，而不是只打印类型名
+    /// DLogger.Log("Player", playerData);
+    ///
+    /// // 异常：自动附加异常类型名和堆栈
+    /// DLogger.LogException("Network", exception);
+    /// </code>
+    /// <para>输出格式为 <c>[时间戳] F:帧号 [标签] 消息</c>，时间戳和帧号默认关闭，</para>
+    /// <para>分别由 <see cref="ShowTimeInTag"/> 和 <see cref="ShowFrameInTag"/> 控制</para>
+    /// </summary>
+    /// <remarks>
+    /// <para>关于颜色标签：</para>
+    /// <list type="bullet">
+    /// <item>所有 &lt;color&gt; 标签都由 <c>[Conditional("UNITY_EDITOR")]</c> 方法追加，打包后整个调用被编译器移除</item>
+    /// <item>因此 Build 中的日志是纯文本，不会有额外的字符串拼接开销，也不需要手动剥离富文本</item>
+    /// <item>这也意味着 Build 里日志长度会比 Editor 中短，排查线上问题时不要依赖颜色做区分</item>
+    /// </list>
+    /// <para>关于线程安全：</para>
+    /// <para>格式化用的 <c>StringBuilder</c> 和循环引用检测用的 <c>HashSet</c> 都是 <c>ThreadLocal</c>，</para>
+    /// <para>所以可以从后台线程直接调用；但帧号只在主线程输出（后台线程取 <c>Time.frameCount</c> 无意义）。</para>
+    /// <para>展开对象时会做循环引用检测，并按 <see cref="MaxDepth"/> 限制递归深度，</para>
+    /// <para>集合和字典按 <see cref="MaxCollectionItems"/> 截断，避免日志本身导致卡顿。</para>
+    /// <para>关于不可重入：</para>
+    /// <para>每次格式化都复用当前线程的同一个 <c>StringBuilder</c>。所以不要在被展开对象的 <c>ToString()</c> 里</para>
+    /// <para>再调用 <c>DLogger</c> 的日志方法或 <c>Format*</c> 方法，否则缓冲区会在外层格式化进行到一半时被清空，</para>
+    /// <para>导致输出错乱。需要自定义展开格式时，请提前算好字符串再作为 <c>string</c> 传入（string 重载不展开对象）。</para>
+    /// </remarks>
     public static partial class DLogger
     {
         private static readonly ILogger UnityLogger = Debug.unityLogger;
@@ -41,16 +80,30 @@ namespace ToolKit
         // 公开配置
         // ──────────────────────────────────────────────
 
-        /// <summary>是否在标签中显示当前帧号</summary>
+        /// <summary>
+        /// 是否在标签中显示当前帧号
+        /// <para>开启后输出 <c>F:123</c> 形式的前缀，默认 false</para>
+        /// <para>仅在主线程生效，后台线程调用时不输出，因为 <c>Time.frameCount</c> 对它们没有意义</para>
+        /// </summary>
         public static bool ShowFrameInTag = false;
 
-        /// <summary> 在标签中显示当前时间戳，格式为 [HH:mm:ss.fff]，默认 false/// </summary>
+        /// <summary>
+        /// 是否在标签中显示当前时间戳
+        /// <para>开启后输出 <c>[HH:mm:ss.fff]</c> 形式的前缀，默认 false</para>
+        /// <para>取的是本机墙钟时间而非游戏运行时长，跨线程调用同样有效</para>
+        /// </summary>
         public static bool ShowTimeInTag = false;
 
-        /// <summary>集合/字典最多显示的元素数量，超出部分截断并提示。默认 100</summary>
+        /// <summary>
+        /// 集合/字典最多显示的元素数量，超出部分截断并提示。默认 100
+        /// <para>调大可以看全数据，但超大集合会显著拖慢日志格式化，排查完建议还原</para>
+        /// </summary>
         public static int MaxCollectionItems = 100;
 
-        /// <summary>对象嵌套递归最大深度，超出后直接调用 ToString()。默认 3</summary>
+        /// <summary>
+        /// 对象嵌套递归最大深度，超出后直接调用 ToString()。默认 3
+        /// <para>Unity 的组件引用层级通常较深，深度越大越可能触发大段输出</para>
+        /// </summary>
         public static int MaxDepth = 3;
 
         private static readonly ThreadLocal<StringBuilder> Builder =
@@ -72,7 +125,17 @@ namespace ToolKit
                 InitializeOnMainThread();
             }
         }
-        // 提供显式初始化方法，供需要精确控制的场景使用
+        /// <summary>
+        /// 显式初始化日志系统，登记当前线程为主线程
+        /// <para>正常情况下不需要调用：<c>AutoInitialize</c> 会在场景加载前（<c>BeforeSceneLoad</c>）自动完成</para>
+        /// <para>仅在需要精确控制初始化时机的场景下手动调用，例如在更早的静态构造或编辑器脚本中打日志</para>
+        /// <para>重复调用是安全的，已初始化时直接返回</para>
+        /// </summary>
+        /// <remarks>
+        /// <para>关于主线程登记：</para>
+        /// <para>登记的是「第一次初始化时所在的线程」，之后只有该线程调用才会输出帧号。</para>
+        /// <para>如果日志系统是在后台线程首次触发的，帧号会一直缺失，此时应显式在主线程调用一次 <see cref="Init"/>。</para>
+        /// </remarks>
         public static void Init()
         {
             if (!isInitialized)
@@ -88,6 +151,11 @@ namespace ToolKit
 
         #region Log
 
+        /// <summary>
+        /// 输出普通日志
+        /// <para>配合 <see cref="ShowTimeInTag"/> / <see cref="ShowFrameInTag"/> 输出时间戳与帧号前缀</para>
+        /// </summary>
+        /// <param name="message">日志内容，作为纯文本原样输出，不参与对象展开</param>
 #if UNITY_2022_2_OR_NEWER
         [HideInCallstack]
 #endif
@@ -97,6 +165,10 @@ namespace ToolKit
         }
 
 
+        /// <summary>
+        /// 输出普通日志，并递归展开对象内容
+        /// </summary>
+        /// <param name="message">任意对象，会展开其字段与属性，而非仅调用 ToString()</param>
 #if UNITY_2022_2_OR_NEWER
         [HideInCallstack]
 #endif
@@ -106,6 +178,12 @@ namespace ToolKit
         }
 
 
+        /// <summary>
+        /// 输出带标签的普通日志
+        /// <para>标签会渲染为橙色的 <c>[Tag]</c> 前缀，Editor 中用于快速扫读和过滤</para>
+        /// </summary>
+        /// <param name="tag">标签文本，建议使用固定短词（如模块名）便于 Console 过滤</param>
+        /// <param name="message">日志内容，作为纯文本原样输出</param>
 #if UNITY_2022_2_OR_NEWER
         [HideInCallstack]
 #endif
@@ -115,6 +193,11 @@ namespace ToolKit
         }
 
 
+        /// <summary>
+        /// 输出带标签的普通日志，并递归展开对象内容
+        /// </summary>
+        /// <param name="tag">标签文本，渲染为橙色 <c>[Tag]</c> 前缀</param>
+        /// <param name="message">任意对象，会展开其字段与属性</param>
 #if UNITY_2022_2_OR_NEWER
         [HideInCallstack]
 #endif
@@ -131,6 +214,10 @@ namespace ToolKit
         #region Log Warning
 
 
+        /// <summary>
+        /// 输出警告日志，在 Console 中显示为黄色三角图标
+        /// </summary>
+        /// <param name="message">日志内容，作为纯文本原样输出</param>
 #if UNITY_2022_2_OR_NEWER
         [HideInCallstack]
 #endif
@@ -140,6 +227,10 @@ namespace ToolKit
         }
 
 
+        /// <summary>
+        /// 输出警告日志，并递归展开对象内容
+        /// </summary>
+        /// <param name="message">任意对象，会展开其字段与属性</param>
 #if UNITY_2022_2_OR_NEWER
         [HideInCallstack]
 #endif
@@ -149,6 +240,11 @@ namespace ToolKit
         }
 
 
+        /// <summary>
+        /// 输出带标签的警告日志
+        /// </summary>
+        /// <param name="tag">标签文本，渲染为橙色 <c>[Tag]</c> 前缀</param>
+        /// <param name="message">日志内容，作为纯文本原样输出</param>
 #if UNITY_2022_2_OR_NEWER
         [HideInCallstack]
 #endif
@@ -158,6 +254,11 @@ namespace ToolKit
         }
 
 
+        /// <summary>
+        /// 输出带标签的警告日志，并递归展开对象内容
+        /// </summary>
+        /// <param name="tag">标签文本，渲染为橙色 <c>[Tag]</c> 前缀</param>
+        /// <param name="message">任意对象，会展开其字段与属性</param>
 #if UNITY_2022_2_OR_NEWER
         [HideInCallstack]
 #endif
@@ -175,6 +276,10 @@ namespace ToolKit
         #region Log Error
 
 
+        /// <summary>
+        /// 输出错误日志，在 Console 中显示为红色图标
+        /// </summary>
+        /// <param name="message">日志内容，作为纯文本原样输出</param>
 #if UNITY_2022_2_OR_NEWER
         [HideInCallstack]
 #endif
@@ -184,6 +289,10 @@ namespace ToolKit
         }
 
 
+        /// <summary>
+        /// 输出错误日志，并递归展开对象内容
+        /// </summary>
+        /// <param name="message">任意对象，会展开其字段与属性</param>
 #if UNITY_2022_2_OR_NEWER
         [HideInCallstack]
 #endif
@@ -193,6 +302,11 @@ namespace ToolKit
         }
 
 
+        /// <summary>
+        /// 输出带标签的错误日志
+        /// </summary>
+        /// <param name="tag">标签文本，渲染为橙色 <c>[Tag]</c> 前缀</param>
+        /// <param name="message">日志内容，作为纯文本原样输出</param>
 #if UNITY_2022_2_OR_NEWER
         [HideInCallstack]
 #endif
@@ -201,6 +315,11 @@ namespace ToolKit
             UnityLogger.Log(LogType.Error, FormatTagAndMessage(tag, message));
         }
 
+        /// <summary>
+        /// 输出带标签的错误日志，并递归展开对象内容
+        /// </summary>
+        /// <param name="tag">标签文本，渲染为橙色 <c>[Tag]</c> 前缀</param>
+        /// <param name="message">任意对象，会展开其字段与属性</param>
 #if UNITY_2022_2_OR_NEWER
         [HideInCallstack]
 #endif
@@ -215,8 +334,20 @@ namespace ToolKit
 
 
         /// <summary>
-        /// 输出异常日志，自动附加异常类型和堆栈信息
+        /// 输出异常日志，自动附加异常类型名和堆栈信息
+        /// <para>输出格式为 <c>[异常类型名]异常消息</c> 换行后接完整堆栈，类型名在 Editor 中显示为红色</para>
+        /// <code>
+        /// try
+        /// {
+        ///     LoadSaveFile(path);
+        /// }
+        /// catch (Exception exception)
+        /// {
+        ///     DLogger.LogException("Save", exception);
+        /// }
+        /// </code>
         /// </summary>
+        /// <param name="exception">要记录的异常，传 null 时直接返回，不产生任何输出</param>
 #if UNITY_2022_2_OR_NEWER
         [HideInCallstack]
 #endif
@@ -230,8 +361,11 @@ namespace ToolKit
 
 
         /// <summary>
-        /// 输出异常日志（带标签）
+        /// 输出带标签的异常日志，自动附加异常类型名和堆栈信息
+        /// <para>与 <see cref="LogException(System.Exception)"/> 的唯一区别是多一个橙色 <c>[Tag]</c> 前缀</para>
         /// </summary>
+        /// <param name="tag">标签文本，建议使用抛出异常所在的模块名</param>
+        /// <param name="exception">要记录的异常，传 null 时直接返回，不产生任何输出</param>
 #if UNITY_2022_2_OR_NEWER
         [HideInCallstack]
 #endif
@@ -247,6 +381,12 @@ namespace ToolKit
 
         #region Formatting
 
+        /// <summary>
+        /// 按当前配置格式化一段文本，不输出日志
+        /// <para>用于先把日志内容拼装好再统一输出，或在别处复用同一套时间戳/帧号前缀</para>
+        /// </summary>
+        /// <param name="message">日志内容，作为纯文本原样追加</param>
+        /// <returns>带时间戳与帧号前缀的完整文本（前缀是否出现取决于公开配置开关）</returns>
         public static string FormatMessage(string message)
         {
             StringBuilder sb = Builder.Value;
@@ -260,6 +400,12 @@ namespace ToolKit
 
             return sb.ToString();
         }
+        /// <summary>
+        /// 按当前配置格式化一个对象，不输出日志
+        /// <para>会递归展开对象的字段与属性，并做循环引用检测与深度截断</para>
+        /// </summary>
+        /// <param name="obj">任意对象，传 null 时输出字面量 <c>null</c></param>
+        /// <returns>带时间戳与帧号前缀的完整文本</returns>
         public static string FormatMessage(object obj)
         {
             HashSet<object> visited = VisitedObjects.Value;
@@ -279,8 +425,11 @@ namespace ToolKit
         }
 
         /// <summary>
-        /// 格式化日志标签和字符串消息
+        /// 按当前配置格式化标签与文本消息，不输出日志
         /// </summary>
+        /// <param name="tag">标签文本，渲染为橙色 <c>[Tag]</c> 前缀</param>
+        /// <param name="message">日志内容，作为纯文本原样追加</param>
+        /// <returns>形如 <c>[时间戳] F:帧号 [标签] 消息</c> 的完整文本</returns>
         public static string FormatTagAndMessage(string tag, string message)
         {
             StringBuilder sb = Builder.Value;
@@ -299,8 +448,12 @@ namespace ToolKit
 
 
         /// <summary>
-        /// 格式化日志标签和对象
+        /// 按当前配置格式化标签与对象，不输出日志
+        /// <para>会递归展开对象的字段与属性，并做循环引用检测与深度截断</para>
         /// </summary>
+        /// <param name="tag">标签文本，渲染为橙色 <c>[Tag]</c> 前缀</param>
+        /// <param name="obj">任意对象，传 null 时输出字面量 <c>null</c></param>
+        /// <returns>形如 <c>[时间戳] F:帧号 [标签] {展开后的对象}</c> 的完整文本</returns>
         public static string FormatTagAndMessage(string tag, object obj)
         {
             HashSet<object> visited = VisitedObjects.Value;
@@ -322,6 +475,13 @@ namespace ToolKit
         }
 
 
+        /// <summary>
+        /// 按当前配置格式化标签与异常，不输出日志
+        /// <para>输出为 <c>[标签]异常类型名</c> 换行后接异常消息与堆栈，而非对象展开形式</para>
+        /// </summary>
+        /// <param name="tag">标签文本，渲染为橙色 <c>[Tag]</c> 前缀</param>
+        /// <param name="exception">要格式化的异常，本重载不做 null 检查，传 null 会抛 <c>NullReferenceException</c></param>
+        /// <returns>形如 <c>[时间戳] F:帧号 [标签]异常类型名\n消息\n堆栈</c> 的完整文本</returns>
         public static string FormatTagAndMessage(string tag, Exception exception)
         {
 

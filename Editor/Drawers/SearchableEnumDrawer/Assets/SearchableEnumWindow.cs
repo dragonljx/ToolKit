@@ -85,6 +85,7 @@ namespace ToolKit.Editor
 
             RefreshList(string.Empty);
 
+            _searchField.Focus();
         }
 
         private void OnSelectionChanged(IEnumerable<object> enumerable)
